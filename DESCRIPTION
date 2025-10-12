@@ -1,0 +1,19 @@
+Package: MEI
+Type: Package
+Title: Measurement Equivalence/Invariance Test
+Version: 1.0.10
+Author: Temporarily removed for blind review 
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: Full measurement equivalence/invariance test 
+License: GPL-3
+Encoding: UTF-8
+LazyData: TRUE
+Depends: 
+    R (>= 3.5.0),
+    lavaan (>= 0.6-5),
+    MASS (>= 7.3-60),
+    semTools (>= 0.5-6)
+Imports:
+    MASS (>= 7.3-60),
+    semTools (>= 0.5-6),
+    lavaan (>= 0.6-5), parallel
