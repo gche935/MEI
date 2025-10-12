@@ -17,3 +17,5 @@ Imports:
     MASS (>= 7.3-60),
     semTools (>= 0.5-6),
     lavaan (>= 0.6-5), parallel
+URL: https://github.com/gche935/MEI
+BugReports: https://github.com/gche935/MEI/issues
