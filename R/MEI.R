@@ -11,7 +11,35 @@ library(MASS)  ## load MASS
 
 
 # ==================== Creating Function "Full_MEI" ==================== #
-
+#' Full Measurement Invariance Test
+#'
+#' Conduct configural invariance, full metric invariance and full scalar invariance tests
+#'
+#' Missing values are handled with full-information maximum likelihood.
+#'
+#' @param model User-specified CFA model
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param Groups Grouping variable for cross-group comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#'
+#' @return lavaan outputs, model fit for configural, metric and scalar invariance models, summary of fit statistics for each model
+#'
+#' @examples
+#'
+#' ## -- Example A: Measurement Invariance Test Across Groups -- ##
+#'
+#' # Data file is "Example.A"
+#'
+#' # Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## ===== Full Measurement Invariance Test ===== ##
+#' Full_MEI(Model.A, Example.A, Groups = "Region")
+#'
 Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 
   if (Cluster == "NULL") {
@@ -171,7 +199,37 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 
 
 # ==================== Create Function "CompareLoadings" ==================== #
-
+#' Metric Invariance Test
+#'
+#' Conduct a full metric invariance test and identify a partial metric invariance model
+#'
+#' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
+#'
+#'
+#' @param model User-specified CFA model
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param Groups Grouping variable for cross-group comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return partial metric invariance model in PMI.txt file
+#'
+#' @examples
+#'
+#' ## -- Example A: Measurement Invariance Test Across Groups -- ##
+#'
+#' # Data file is "Example.A"
+#'
+#' # Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#'
 CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
 
   options("width"=210)
@@ -816,7 +874,42 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
 
 # ==================== Create Function "CompareMeans" ==================== #
-
+#' Scalar Invariance Test and Compare Latent Means
+#'
+#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means
+#'
+#' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
+#'
+#'
+#' @param PMI.Model.R Partial metric invariance model from CompareLoadings() or user-specified
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param Groups Grouping variable for cross-group comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
+#'
+#' @examples
+#'
+#' ## -- Example A: Measurement Invariance Test Across Groups -- ##
+#'
+#' # Data file is "Example.A"
+#'
+#' ## Nor run:
+#' # Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End(Not run)
+#'
+#' ## ===== Compare Intercepts and Latent Means ===== ##
+#' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
+#'
 CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
 
   options("width"=210)
@@ -1932,7 +2025,55 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
 
 # ==================== Create Function "CompareParameters" ==================== #
-
+#' Compare Defined Parameters Across Groups
+#'
+#' Conduct defined parameters across groups, e.g., direct, indirect and total effects
+#'
+#' Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific mediation effects in complex latent variable models. Organizational Research Methods, 15, 3-16.
+#'
+#'
+#' @param PMI.Model.R Partial metric invariance model from CompareLoadings() or user-specified
+#' @param model.DP model with defined parameters
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param Groups Grouping variable for cross-group comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+#'
+#' @examples
+#'
+#' ## -- Example A: Measurement Invariance Test Across Groups -- ##
+#'
+#' # Data file is "Example.A"
+#'
+#' ## Not run:
+#' # Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End(Not run)
+#'
+#' ## ===== Compare Paths ===== ##
+#' # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
+#' model.DP <- '
+#'   Wellbeing ~ Xb1*Engagement + Xc1*WorkLifeConflict + Xd1*OrgSize + Xe1*Tenure
+#'   Engagement ~ Xa1*WorkLifeConflict
+#'
+#'  # Defined Parameters #
+#'  IndirectP := Xa1*Xb1  # Indirect effect
+#'  DirectP := Xc1  # Direct effect
+#'  Total := Xa1*Xb1 + Xc1  # Total effect
+#' '
+#'
+#' # -- Run function CompareParmeters using  Monte Carlo simulation -- #
+#' CompareParameters(PMI.Model.R, model.DP, Example.A, Groups = "Region")
+#'
 CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluster="NULL", Bootstrap=0) {
 
   options("width"=210)
@@ -2341,7 +2482,35 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
 # ==================== Create Function "MLCompareLoadings" ==================== #
-
+#' Metric Invariance Test Between Level 1 and Level 2
+#'
+#' Conduct configural invariance and full metric invariance test, and identify partial metric invariance model
+#'
+#' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
+#'
+#' Since all Level 1 (within-group) variables are group-mean centered, intercepts and latent means of all variables at Level 1 are set to zero. Hence, only configural and metric invariance across levels are tested
+#' Bootstrapping is not available for multi-level model
+#'
+#' Define the measurement model only once without specifying the level, and the function will compare the model across levels
+#'
+#'
+#' @param model User-specified CFA model
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return partial metric invariance model in PMI.txt file
+#'
+#' @examples
+#'
+#' ## == Example D - Multilevel Confirmatory Factor Analysis == ##
+#' # Data file is "Example.A"; cluster variable is "ID"
+#'
+#' ## Specify the measurement model - Model.D ##
+#' Model.D <- 'OLBI =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8'
+#'
+#' ## ===== Compare Loadings ===== ##
+#' MLCompareLoadings(Model.D, Example.D, Cluster = "ID", alpha = 0.05)
+#'
   MLCompareLoadings <- function(model, data.source, Cluster="NULL", alpha=0.05) {
 
   options("width"=210)
@@ -2996,7 +3165,50 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
 # ==================== Create Function "LGCompareLoadings" ==================== #
-
+  #' Metric Invariance Test Across Time or Sources
+  #'
+  #' Conduct metric invariance test and identify non-invariant items across time or different sources.
+  #'
+  #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
+  #'
+  #' Residuals of indicators are covaried across time automatically
+  #'
+  #' @param model User-specified CFA model
+  #' @param data.source A data frame containing the observed variables used in the model
+  #' @param no.waves Number of waves for comparisons
+  #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+  #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+  #' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+  #' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+  #'
+  #' @examples
+  #'
+  #' ## == Example B - Panel Data in Longitudinal Studies == ##
+  #'
+  #' # Data file is "Example.B"
+  #'
+  #' ## Specify the measurement model - Model.B ##
+  #' Model.B <- '
+  #'   SWLC =~ x1 + x2 + x3 + x4 + x5
+  #' '
+  #'
+  #' ## ===== Compare Factor Loadings ===== ##
+  #' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+  #'
+  #'
+  #' ## == Example C - Non-independent Data from two sources == ##
+  #'
+  #' # Data file is "Example.C"
+  #'
+  #' ## Specify the measurement model - Model.C ##
+  #' Model.C <- '
+  #'      External =~ x1 + x2 + x3 + x4 + x5 + x6
+  #'      Internal =~ x7 + x8 + x9 + x10
+  #' '
+  #'
+  #' ## ===== Compare Factor Loadings ===== ##
+  #' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+  #'
   LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, alpha=0.01) {
 
   options("width"=210)
@@ -3753,8 +3965,59 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
 # ==================== Create Function "LGCompareMeans" ==================== #
-
-LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
+  #' Scalar Invariance Test and Compare Latent Means in Longitudinal Models
+  #'
+  #' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time
+  #'
+  #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
+  #'
+  #' Residuals of indicators are covaried across time automatically
+  #'
+  #' @param PMI.Model.R Partial metric invariance model from LGCompareLoadings() or user-specified
+  #' @param data.source A data frame containing the observed variables used in the model
+  #' @param no.waves Number of waves for comparisons
+  #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+  #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+  #' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+  #' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
+  #'
+  #' @examples
+  #'
+  #' ## == Example B - Panel Data in Longitudinal Studies == ##
+  #'
+  #' # Data file is "Example.B"
+  #'
+  #' ## Not run:
+  #' ## Specify the measurement model - Model.B ##
+  #' Model.B <- 'SWLC =~ x1 + x2 + x3 + x4 + x5'
+  #'
+  #' ## ===== Compare Factor Loadings ===== ##
+  #' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+  #' ## End(Not run)
+  #'
+  #' ## ===== Compare Means ===== ##
+  #' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
+  #'
+  #'
+  #' ## == Example C - Non-independent Data from two sources == ##
+  #'
+  #' # Data file is "Example.C"
+  #'
+  #' ## Not run:
+  #' ## Specify the measurement model - Model.C ##
+  #' Model.C <- '
+  #'      External =~ x1 + x2 + x3 + x4 + x5 + x6
+  #'      Internal =~ x7 + x8 + x9 + x10
+  #' '
+  #'
+  #' ## ===== Compare Factor Loadings ===== ##
+  #' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+  #' ## End(Not run)
+  #'
+  #' ## ===== Compare Means ===== ##
+  #' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, alpha = 0.01)
+  #'
+  LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
 
   options("width"=210)
 
