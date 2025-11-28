@@ -227,8 +227,10 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
 #' '
 #'
+#' ## Not run:
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' # CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End (Not run)
 #'
 CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
 
@@ -895,7 +897,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #'
 #' # Data file is "Example.A"
 #'
-#' ## Nor run:
+#' ## Not run:
 #' # Specify the measurement model - Model.A
 #' Model.A <- '
 #'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
@@ -905,10 +907,10 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #'
 #' ## ===== Compare Loadings ===== ##
 #' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
-#' ## End(Not run)
 #'
 #' ## ===== Compare Intercepts and Latent Means ===== ##
 #' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End(Not run)
 #'
 CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
 
