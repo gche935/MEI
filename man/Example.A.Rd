@@ -11,19 +11,19 @@ A data frame with 2800 rows and 17 variables:
   \item{Region}{Character, Grouping variable for Groups: European region ("North West", "Nordic", "Continental", "Southern", "Central East", "North East" and "South East").}
   \item{Org Size}{Numeric, control variable - organization size.}
   \item{Tenure}{Numeric, control variable - tenure in years.}
-  \item{R45a}{Numeric, Work-kife conflict item R45a from 1 (always) to 5 (never)}
-  \item{R45b}{Numeric, Work-kife conflict item R45b from 1 (always) to 5 (never)}
-  \item{R45c}{Numeric, Work-kife conflict item R45c from 1 (always) to 5 (never)}
-  \item{R45d}{Numeric, Work-kife conflict item R45d from 1 (always) to 5 (never)}
-  \item{R45e}{Numeric, Work-kife conflict item R45e from 1 (always) to 5 (never)}
-  \item{R90a}{Numeric, Engagement item R90a from 1 (always) to 5 (never)}
-  \item{R90b}{Numeric, Engagement item R90b from 1 (always) to 5 (never)}
-  \item{R90c}{Numeric, Engagement item R90c from 1 (always) to 5 (never)}
-  \item{R87a}{Numeric, Psychological wellbeing item R87a from 1 (all of the time) to 6 (at no time)}
-  \item{R87b}{Numeric, Psychological wellbeing item R87b from 1 (all of the time) to 6 (at no time)}
-  \item{R87c}{Numeric, Psychological wellbeing item R87c from 1 (all of the time) to 6 (at no time)}
-  \item{R87d}{Numeric, Psychological wellbeing item R87d from 1 (all of the time) to 6 (at no time)}
-  \item{R87e}{Numeric, Psychological wellbeing item R87e from 1 (all of the time) to 6 (at no time)}
+  \item{R45a}{Numeric, Reverse-coded work-life conflict item 45a: from 1 (never) to 5 (always)}
+  \item{R45b}{Numeric, Reverse-coded work-life conflict item 45b: from 1 (never) to 5 (always)}
+  \item{R45c}{Numeric, Reverse-coded work-life conflict item 45c: from 1 (never) to 5 (always)}
+  \item{R45d}{Numeric, Reverse-coded work-life conflict item 45d: from 1 (never) to 5 (always)}
+  \item{R45e}{Numeric, Reverse-coded work-life conflict item 45e: from 1 (never) to 5 (always)}
+  \item{R90a}{Numeric, Reverse-coded engagement item 90a: from 1 (never) to 5 (always)}
+  \item{R90b}{Numeric, Reverse-coded engagement item 90b: from 1 (never) to 5 (always)}
+  \item{R90c}{Numeric, Reverse-coded engagement item 90c: from 1 (never) to 5 (always)}
+  \item{R87a}{Numeric, Reverse-coded psychological wellbeing item 87a: from 1 (at no time) to 6 (all of the time)}
+  \item{R87b}{Numeric, Reverse-coded psychological wellbeing item 87b: from 1 (at no time) to 6 (all of the time)}
+  \item{R87c}{Numeric, Reverse-coded psychological wellbeing item 87c: from 1 (at no time) to 6 (all of the time)}
+  \item{R87d}{Numeric, Reverse-coded psychological wellbeing item 87d: from 1 (at no time) to 6 (all of the time)}
+  \item{R87e}{Numeric, Reverse-coded psychological wellbeing item 87e: from 1 (at no time) to 6 (all of the time)}
 }
 }
 \source{
