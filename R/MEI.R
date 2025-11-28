@@ -184,13 +184,13 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
     Sub.fit.summary[group.R, 3:11] <- format(round(lavaan::fitMeasures(Sub.model, c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled",
         "tli.scaled", "srmr_bentler", "aic", "bic")), digits = 4), nsmall = 4, scientific = FALSE)
     Sub.fit.summary[group.R, 4] <- round(as.numeric(Sub.fit.summary[group.R, 4]), digits = 0)
-  }  ## End group.R
+  }  ## End (for group.R)
 
   cat(rep("\n",3), "##########  Model Fit Indices for each Group in Configural Invariance Model  ##########", rep("\n", 2))
   print(as.data.frame(Sub.fit.summary), right = TRUE, row.names=F, quote=F)
   cat("\n")
 
-} ## Close function Full_MEI
+} ## End (Function Full_MEI) 
 
 # ==================== Finish Function "Full_MEI" ==================== #
 
@@ -226,6 +226,11 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #'        Engagement =~ R90a + R90b + R90c
 #'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
 #' '
+#'
+#' ## Not run:
+#' ## ===== Full Measurement Invariance Test ===== ##
+#' Full_MEI(Model.A, Example.A, Groups = "Region")
+#' ## End (Not run)
 #'
 #' ## ===== Compare Loadings ===== ##
 #' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
@@ -287,7 +292,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   ## Request summary outputs
   #$  print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
 
-  ## ===== End Run Configural Model ===== ##
+  ## ===== End (Run Configural Model) ===== ##
 
 
   par.est <- lavaan::coef(Model.config)  # sample parameters
@@ -426,7 +431,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
 #$      print(round(FL[], digits=4))
 
-    ## == End Print Factor Loadings  == ##
+    ## == End (Print Factor Loadings)  == ##
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
         no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for each item
@@ -806,9 +811,9 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
         rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", "c(", paste0(R.Model[1,], collapse=","), ")*", names.ov[(FL.kr+1)], " + "))
       Recommend.Model <-
         rbind(Recommend.Model, paste0("  c(",paste0(R.Model[2, ], collapse=","),")*", names.ov[(FL.kr+no.items[factor.no])]))
-    }  ## End Models with 2 items ##
+    }  ## End (Models with 2 items) 
 
-  } ## End loop factor.no ##
+  } ## End (loop factor.no) 
 
 
   Recommend.Model <- rbind(Recommend.Model, "  '")  ## last line of Recommended Model
@@ -862,11 +867,11 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
-  ## == End Print Intercepts == ##
+  ## == End (Print Intercepts) == ##
 
   cat(rep("\n",2),"The recommended model PMI.Model.R is saved in the file 'PMI.txt'", "\n")
 
-} ## Close function CompareLoadings
+} ## End (Function CompareLoadings) 
 
 # ==================== Finish Function "CompareLoadings" ==================== #
 
@@ -890,6 +895,14 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
 #' @export
 #' @examples
+#'
+#' ## Not run:
+#' ## ===== Full Measurement Invariance Test ===== ##
+#' Full_MEI(Model.A, Example.A, Groups = "Region")
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End (Not run)
 #'
 #' ## ===== Compare Intercepts and Latent Means ===== ##
 #' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
@@ -953,7 +966,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   ## Request summary outputs
   #$  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
 
-  ## ===== End Run model.PMI ===== ##
+  ## ===== End (Run model.PMI) ===== ##
 
 
   par.est <- lavaan::coef(PMI.Model.fit)  # sample parameters
@@ -1138,7 +1151,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
 #$      print(round(FL[], digits=4))
 
-      ## == End Print Factor Loadings  == ##
+      ## == End (Print Factor Loadings)  == ##
 
       ## ==  Print Intercepts of all groups  == ##
       no.k <- no.items[factor.no]*no.group  # number of intercepts in TX
@@ -1175,7 +1188,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #$      cat(rep("\n", 3), "Intercepts ", rep("\n", 2))
 #$      print(round(TX[], digits=4))
 
-      ## == End Print Intercepts  == ##
+      ## == End (Print Intercepts)  == ##
 
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
@@ -1746,9 +1759,9 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         Recommend.Model[nrow(Recommend.Model)] <-
           paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ov[(sum(no.items[1:(factor.no-1)])+2)], " ~ c(",paste0(R.Model[2, ], collapse=","), ")*1","\n")
       } ## end if factor.no == 1
-    }  ## End Models with 2 items ##
+    }  ## End (Models with 2 items) 
 
-  } ## End loop factor.no ##
+  } ## End (loop factor.no) 
 
 
   Recommend.Model[1] <- sub("''","'", Recommend.Model[1])
@@ -1820,7 +1833,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
-  ## == End Print Intercepts == ##
+  ## == End (Print Intercepts) == ##
 
 
 
@@ -1833,7 +1846,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   cat("## === Intercepts in Final Model === ##")
   cat("\n")
   print(round(Final.Model.TX, digits=4))
-  ## == End Print Intercepts == ##
+  ## == End (Print Intercepts) == ##
 
   ## == Print Latent Means == ##
   Final.Model.LM <- matrix(0, no.factor, no.group)
@@ -1844,7 +1857,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   cat("## === Latent Means in Final Model === ##")
   cat("\n")
   print(round(Final.Model.LM, digits=4))
-  ## == End Print Latent Means == ##
+  ## == End (Print Latent Means) == ##
 
 
   ## ========== Compare Latent Means ========== ##
@@ -1997,11 +2010,11 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
     cat("\n")
 
-  } # End factor.no loop
+  } ## End (factor.no loop) 
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
 
-} ## Close function CompareMeans
+} ## End (Function CompareMeans) 
 
 # ==================== Finish Function "CompareMeans" ==================== #
 
@@ -2027,6 +2040,21 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #' @export
 #' @examples
 #'
+#'
+#' ## Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## Not run:
+#' ## ===== Full Measurement Invariance Test ===== ##
+#' Full_MEI(Model.A, Example.A, Groups = "Region")
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' ## End (Not run)
 #'
 #' ## ===== Compare Paths ===== ##
 #' # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
@@ -2102,7 +2130,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   ## Request summary outputs
   #$  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
 
-  ## ===== End Run model.SEM ===== ##
+  ## ===== End (Run model.SEM) ===== ##
 
   no.group <- lavInspect(SEM.Model.fit, "ngroups")  # Number of groups #
   group.names <<- lavInspect(SEM.Model.fit, "group.label")
@@ -2211,7 +2239,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   ## Request summary outputs
   print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
 
-  ## ===== End Run model.SEM ===== ##
+  ## ===== End (Run model.SEM) ===== ##
 
   ## ========== Compare Parameters ========== ##
 
@@ -2443,7 +2471,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
   } # end loop DP.no
 
-} ## Close function CompareParameters
+} ## End (Function CompareParameters)
 
 # ==================== Finish Function "CompareParameters" ==================== #
 
@@ -2549,7 +2577,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
-## ===== End Run Configural Model ===== ##
+## ===== End (Run Configural Model) ===== ##
 
 
   par.est <- lavaan::coef(Model.config)  # sample parameters
@@ -2654,7 +2682,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
 #$      print(round(FL[], digits=4))
 
-    ## == End Print Factor Loadings  == ##
+    ## == End (Print Factor Loadings)  == ##
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
         no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for each item
@@ -3046,9 +3074,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       Recommend.Model <-
         rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 2],"*", names.ov[(FL.kr+no.items[factor.no])])))
 
-    }  ## End Models with 2 items ##
+    }  ## End (Models with 2 items) 
 
-  } ## End loop factor.no ##
+  } ## End (loop factor.no) 
 
   Recommend.Model <- rbind(Recommend.Model, "  '")  ## last line of Recommended Model
 
@@ -3120,65 +3148,63 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
-  ## == End Print Intercepts == ##
+  ## == End (Print Intercepts) == ##
 
   cat(rep("\n",2),"The recommended model PMI.Model.R is saved in the file 'PMI.txt'", "\n")
 
-} ## Close function MLCFA
+} ## End (Function MLCompareLoadings)
 
-
-## system.time(MLCFA(Model.A, Demo.twolevel, Cluster="cluster", alpha=0.05))
 
 # ==================== Finish Function "MLCompareLoadings" ==================== #
 
 
 
 # ==================== Create Function "LGCompareLoadings" ==================== #
-  #' Metric Invariance Test Across Time or Sources
-  #'
-  #' Conduct metric invariance test and identify non-invariant items across time or different sources.
-  #'
-  #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
-  #'
-  #' Residuals of indicators are covaried across time automatically
-  #'
-  #' @param model User-specified CFA model
-  #' @param data.source A data frame containing the observed variables used in the model
-  #' @param no.waves Number of waves for comparisons
-  #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-  #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-  #' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-  #' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
-  #' @export
-  #' @examples
-  #'
-  #' ## == Example B - Panel Data in Longitudinal Studies == ##
-  #'
-  #' # Data file is "Example.B"
-  #'
-  #' ## Specify the measurement model - Model.B ##
-  #' Model.B <- '
-  #'   SWLC =~ x1 + x2 + x3 + x4 + x5
-  #' '
-  #'
-  #' ## ===== Compare Factor Loadings ===== ##
-  #' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
-  #'
-  #'
-  #' ## == Example C - Non-independent Data from two sources == ##
-  #'
-  #' # Data file is "Example.C"
-  #'
-  #' ## Specify the measurement model - Model.C ##
-  #' Model.C <- '
-  #'      External =~ x1 + x2 + x3 + x4 + x5 + x6
-  #'      Internal =~ x7 + x8 + x9 + x10
-  #' '
-  #'
-  #' ## ===== Compare Factor Loadings ===== ##
-  #' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
-  #'
-  LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, alpha=0.01) {
+#' Metric Invariance Test Across Time or Sources
+#'
+#' Conduct metric invariance test and identify non-invariant items across time or different sources.
+#'
+#' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
+#'
+#' Residuals of indicators are covaried across time automatically
+#'
+#' @param model User-specified CFA model
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param no.waves Number of waves for comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+#' @export
+#' @examples
+#'
+#' ## == Example B - Panel Data in Longitudinal Studies == ##
+#'
+#' # Data file is "Example.B"
+#'
+#' ## Specify the measurement model - Model.B ##
+#' Model.B <- '
+#'   SWLC =~ x1 + x2 + x3 + x4 + x5
+#' '
+#'
+#' ## ===== Compare Factor Loadings ===== ##
+#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+#'
+#'
+#' ## == Example C - Non-independent Data from two sources == ##
+#'
+#' # Data file is "Example.C"
+#'
+#' ## Specify the measurement model - Model.C ##
+#' Model.C <- '
+#'      External =~ x1 + x2 + x3 + x4 + x5 + x6
+#'      Internal =~ x7 + x8 + x9 + x10
+#' '
+#'
+#' ## ===== Compare Factor Loadings ===== ##
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+#'
+LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, alpha=0.01) {
 
   options("width"=210)
 
@@ -3268,7 +3294,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   print(lavaan::summary(Model.Long.config, fit.measure = T, standardized = T, rsq = T))
   #$  parameterEstimates(Model.Long.config)
   cat("\n")
-  ## ===== End Run Configural Model ===== ##
+  ## ===== End (Run Configural Model) ===== ##
 
 
   par.est <- lavaan::coef(Model.Long.config)  # sample parameters
@@ -3372,7 +3398,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
 #$      print(round(FL[], digits=4))
 
-    ## == End Print Factor Loadings  == ##
+    ## == End (Print Factor Loadings)  == ##
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
         no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for each item
@@ -3834,9 +3860,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       }
       Recommend.Model <- rbind(Recommend.Model, "\n")
 
-    }  ## End Models with 2 items ##
+    }  ## End (Models with 2 items) 
 
-  } ## End loop factor.no ##
+  } ## End (loop factor.no) 
 
   Recommend.Model <- rbind(Recommend.Model, "  '", "\n")  ## last line of Recommended Model
 
@@ -3922,11 +3948,11 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
-  ## == End Print Factor Loadings == ##
+  ## == End (Print Factor Loadings) == ##
 
   cat(rep("\n",2),"The recommended model PMI.Model.R is saved in the file 'PMI.txt'", "\n")
 
-} ## Close function LGCompareLoadings
+} ## End (Function LGCompareLoadings)
 
 # ==================== Finish Function "LGCompareLoadings" ==================== #
 ## system.time(LGCompareLoadings(Model.D, Data.D, no.waves=3, alpha=0.01))
@@ -3934,40 +3960,43 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
 # ==================== Create Function "LGCompareMeans" ==================== #
-  #' Scalar Invariance Test and Compare Latent Means in Longitudinal Models
-  #'
-  #' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time
-  #'
-  #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
-  #'
-  #' Residuals of indicators are covaried across time automatically
-  #'
-  #' @param PMI.Model.R Partial metric invariance model from LGCompareLoadings() or user-specified
-  #' @param data.source A data frame containing the observed variables used in the model
-  #' @param no.waves Number of waves for comparisons
-  #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-  #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-  #' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-  #' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
-  #' @export
-  #' @examples
-  #'
-  #' ## == Example B - Panel Data in Longitudinal Studies == ##
-  #'
-  #' # Data file is "Example.B"
-  #'
-  #' ## ===== Compare Means ===== ##
-  #' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
-  #'
-  #'
-  #' ## == Example C - Non-independent Data from two sources == ##
-  #'
-  #' # Data file is "Example.C"
-  #'
-  #' ## ===== Compare Means ===== ##
-  #' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, alpha = 0.01)
-  #'
-  LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
+#' Scalar Invariance Test and Compare Latent Means in Longitudinal Models
+#'
+#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time
+#'
+#' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
+#'
+#' Residuals of indicators are covaried across time automatically
+#'
+#' @param PMI.Model.R Partial metric invariance model from LGCompareLoadings() or user-specified
+#' @param data.source A data frame containing the observed variables used in the model
+#' @param no.waves Number of waves for comparisons
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
+#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
+#' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
+#' @export
+#' @examples
+#'
+#' ## == Example C - Non-independent Data from two sources == ## 
+#'  
+#' # Data file is "Example.C"
+#'
+#' ## Not run:
+#' ## Specify the measurement model - Model.C ##
+#' Model.C <- '
+#'      External =~ x1 + x2 + x3 + x4 + x5 + x6
+#'      Internal =~ x7 + x8 + x9 + x10
+#' '
+#'
+#' ## ===== Compare Factor Loadings ===== ##
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+#' ## End (Not run)
+#'
+#' ## ===== Compare Means ===== ##
+#' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, alpha = 0.01)
+#'
+LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
 
   options("width"=210)
 
@@ -4030,7 +4059,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
 
-  ## ===== End Run model.PMI ===== ##
+  ## ===== End (Run model.PMI) ===== ##
 
   par.est <- lavaan::coef(PMI.Model.fit)  # sample parameters
   group.names <<- c(paste0("Time ", 1:no.group))  # group names
@@ -4263,7 +4292,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
 #$      print(round(FL[], digits=4))
 
-      ## == End Print Factor Loadings  == ##
+      ## == End (Print Factor Loadings)  == ##
 
       ## ==  Print Intercepts of all groups  == ##
       no.k <- no.items[factor.no]*no.group  # number of intercepts in TX
@@ -4300,7 +4329,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #$      cat(rep("\n", 3), "Intercepts ", rep("\n", 2))
 #$      print(round(TX[], digits=4))
 
-      ## == End Print Intercepts  == ##
+      ## == End (Print Intercepts)  == ##
 
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
@@ -4934,9 +4963,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
         Recommend.Model <- rbind(Recommend.Model, "'", "\n")
 
 
-    }  ## End Models with 2 items ##
+    }  ## End (Models with 2 items) 
 
-  } ## End loop factor.no ##
+  } ## End (loop factor.no) 
 
 
 
@@ -5023,7 +5052,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
-  ## == End Print Factor Loadings == ##
+  ## == End (Print Factor Loadings) == ##
 
 
 
@@ -5049,7 +5078,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat("\n")
   print(round(Final.Model.TX, digits=4))
 
-  ## == End Print Intercepts == ##
+  ## == End (Print Intercepts) == ##
 
 
   ## == Print Latent Means == ##
@@ -5064,7 +5093,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat("## === Latent Means in Final Model === ##")
   cat("\n")
   print(round(Final.Model.LM, digits=4))
-  ## == End Print Latent Means == ##
+  ## == End (Print Latent Means) == ##
 
 
   ## ========== Compare Latent Means ========== ##
@@ -5214,11 +5243,11 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
     print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
     cat("\n")
 
-  } # End factor.no loop
+  } # End (factor.no loop) 
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
 
-} ## Close function LGCompareMeans
+} ## End (Function LGCompareMeans) 
 
 # ==================== Finish Function "LGCompareMeans" ==================== #
 
@@ -6023,7 +6052,7 @@ listanddelete <- function(no_item = 5, no_nipair = 2, nipair = c(1,3,1,5)) {
     }
   }
 
-}  # End function listanddelete
+}  ## End (Function listanddelete) 
 
 ## ==========  Finish Function List and Delete ========== ##
 

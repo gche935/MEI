@@ -48,6 +48,11 @@ Model.A <- '
        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
 '
 
+## Not run:
+## ===== Full Measurement Invariance Test ===== ##
+Full_MEI(Model.A, Example.A, Groups = "Region")
+## End (Not run)
+
 ## ===== Compare Loadings ===== ##
 CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
 

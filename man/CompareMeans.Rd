@@ -37,6 +37,14 @@ Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau
 }
 \examples{
 
+## Not run:
+## ===== Full Measurement Invariance Test ===== ##
+Full_MEI(Model.A, Example.A, Groups = "Region")
+
+## ===== Compare Loadings ===== ##
+CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+## End (Not run)
+
 ## ===== Compare Intercepts and Latent Means ===== ##
 CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
 

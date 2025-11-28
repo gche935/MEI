@@ -40,6 +40,21 @@ Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific 
 \examples{
 
 
+## Specify the measurement model - Model.A
+Model.A <- '
+       WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+       Engagement =~ R90a + R90b + R90c
+       Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+'
+
+## Not run:
+## ===== Full Measurement Invariance Test ===== ##
+Full_MEI(Model.A, Example.A, Groups = "Region")
+
+## ===== Compare Loadings ===== ##
+CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+## End (Not run)
+
 ## ===== Compare Paths ===== ##
 # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
 model.DP <- '
