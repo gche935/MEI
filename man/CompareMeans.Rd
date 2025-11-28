@@ -41,7 +41,7 @@ Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau
 
 # Data file is "Example.A"
 
-## Nor run:
+## Not run:
 # Specify the measurement model - Model.A
 Model.A <- '
        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
@@ -51,9 +51,9 @@ Model.A <- '
 
 ## ===== Compare Loadings ===== ##
 CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
-## End(Not run)
 
 ## ===== Compare Intercepts and Latent Means ===== ##
 CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
+## End(Not run)
 
 }
