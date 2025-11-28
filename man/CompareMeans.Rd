@@ -37,23 +37,7 @@ Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau
 }
 \examples{
 
-## -- Example A: Measurement Invariance Test Across Groups -- ##
-
-# Data file is "Example.A"
-
-## Not run:
-# Specify the measurement model - Model.A
-Model.A <- '
-       WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
-       Engagement =~ R90a + R90b + R90c
-       Wellbeing =~ R87a + R87b + R87c + R87d + R87e
-'
-
-## ===== Compare Loadings ===== ##
-CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
-
 ## ===== Compare Intercepts and Latent Means ===== ##
 CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
-## End(Not run)
 
 }

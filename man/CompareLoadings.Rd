@@ -48,9 +48,7 @@ Model.A <- '
        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
 '
 
-## Not run:
 ## ===== Compare Loadings ===== ##
-# CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
-## End (Not run)
+CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
 
 }
