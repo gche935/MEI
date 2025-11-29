@@ -3184,7 +3184,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #'
 #' ## Specify the measurement model - Model.B ##
 #' Model.B <- '
-#'   SWLC =~ x1 + x2 + x3 + x4 + x5
+#'   SWLS =~ x1 + x2 + x3 + x4 + x5
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
@@ -3986,7 +3986,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 #' ## Not run:
 #' ## Specify the measurement model - Model.B ##
 #' Model.B <- '
-#'   SWLC =~ x1 + x2 + x3 + x4 + x5
+#'   SWLS =~ x1 + x2 + x3 + x4 + x5
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
@@ -3994,7 +3994,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 #' ## End (Not run)
 #'
 #' ## ===== Compare Means ===== ##
-#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 2, alpha = 0.01)
+#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
 #'
 #'
 #' ## == Example C - Non-independent Data from two sources == ## 

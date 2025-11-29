@@ -44,7 +44,7 @@ Residuals of indicators are covaried across time automatically
 
 ## Specify the measurement model - Model.B ##
 Model.B <- '
-  SWLC =~ x1 + x2 + x3 + x4 + x5
+  SWLS =~ x1 + x2 + x3 + x4 + x5
 '
 
 ## ===== Compare Factor Loadings ===== ##
