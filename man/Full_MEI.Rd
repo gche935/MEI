@@ -7,22 +7,19 @@
 Full_MEI(model, data.source, Groups, Cluster = "NULL")
 }
 \arguments{
-\item{model}{User-specified CFA model}
+\item{model}{User-specified CFA model.}
 
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{data.source}{A data frame containing the observed variables used in the model.}
 
-\item{Groups}{Grouping variable for cross-group comparisons}
+\item{Groups}{Grouping variable for cross-group comparisons.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 }
 \value{
-lavaan outputs, model fit for configural, metric and scalar invariance models, summary of fit statistics for each model
+lavaan outputs, model fit for configural, metric and scalar invariance models, summary of fit statistics for each model.
 }
 \description{
-Conduct configural invariance, full metric invariance and full scalar invariance tests
-}
-\details{
-Missing values are handled with full-information maximum likelihood.
+Conduct configural invariance, full metric invariance and full scalar invariance tests.
 }
 \examples{
 

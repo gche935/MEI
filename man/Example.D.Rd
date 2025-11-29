@@ -8,23 +8,23 @@
 A data frame with 2500 rows and 9 variables:
 \describe{
   \item{ID}{Numeric, Cluster variable}
-  \item{x1}{Numeric, Negatively worded item 1 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x2}{Numeric, Negatively worded item 2 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x3}{Numeric, Negatively worded item 3 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x4}{Numeric, Negatively worded item 4 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x5}{Numeric, Negatively worded item 5 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x6}{Numeric, Negatively worded item 6 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x7}{Numeric, Negatively worded item 7 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
-  \item{x8}{Numeric, Negatively worded item 8 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree)}
+  \item{x1}{Numeric, Negatively worded item 1 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x2}{Numeric, Negatively worded item 2 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x3}{Numeric, Negatively worded item 3 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x4}{Numeric, Negatively worded item 4 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x5}{Numeric, Negatively worded item 5 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x6}{Numeric, Negatively worded item 6 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x7}{Numeric, Negatively worded item 7 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
+  \item{x8}{Numeric, Negatively worded item 8 of Oldenburg Burnout Inventory from 1 (completely disagree) to 5 (completely agree).}
 }
 }
 \source{
-Simulated dataset based on Gruszczynska, E., Basinska, B. A., & Schaufeli, W. B. 2021. Within- and between-person factor structure of the Oldenburg Burnout Inventory: Analysis of a diary study using multilevel confirmatory factor analysis. PLoS ONE 16(5):e0251257. doi: 10.1371/journal.pone.0251257 -- Eight negatively-worded items of the Oldenburg Burnout Inventory (OLBI) to measure burnout of 250 employees for 10 consecutive working days
+Simulated dataset based on Gruszczynska, E., Basinska, B. A., & Schaufeli, W. B. 2021. Within- and between-person factor structure of the Oldenburg Burnout Inventory: Analysis of a diary study using multilevel confirmatory factor analysis. PLoS ONE 16(5):e0251257. doi: 10.1371/journal.pone.0251257 -- Eight negatively-worded items of the Oldenburg Burnout Inventory (OLBI) to measure burnout of 250 employees for 10 consecutive working days.
 }
 \usage{
 Example.D
 }
 \description{
-Simulated dataset for demonstrating MLCompareLoadings() for multi-level confirmatory factor analysis
+Simulated dataset for demonstrating MLCompareLoadings() for multi-level confirmatory factor analysis.
 }
 \keyword{datasets}

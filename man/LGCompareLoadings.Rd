@@ -9,24 +9,25 @@ LGCompareLoadings(
   data.source,
   Cluster = "NULL",
   no.waves = 3,
+  Bootstrap = 0,
   alpha = 0.01
 )
 }
 \arguments{
-\item{model}{User-specified CFA model}
+\item{model}{User-specified measurement model.}
 
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{data.source}{A data frame containing the observed variables used in the model.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{no.waves}{Number of waves for comparisons}
+\item{no.waves}{Number of waves/sources for comparisons.}
 
-\item{alpha}{Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping}
+\item{alpha}{Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).}
 }
 \value{
-estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 }
 \description{
 Conduct metric invariance test and identify non-invariant items across time or different sources.
@@ -34,7 +35,7 @@ Conduct metric invariance test and identify non-invariant items across time or d
 \details{
 Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
 
-Residuals of indicators are covaried across time automatically
+Residuals of indicators are covaried across time/sources automatically.
 }
 \examples{
 

@@ -7,27 +7,27 @@
 MLCompareLoadings(model, data.source, Cluster = "NULL", alpha = 0.05)
 }
 \arguments{
-\item{model}{User-specified CFA model}
+\item{model}{User-specified measurement model.}
 
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{data.source}{A data frame containing the observed variables used in the model.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{alpha}{Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)}
+\item{alpha}{Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method for multi-level models.}
 }
 \value{
-partial metric invariance model in PMI.txt file
+Partial metric invariance model in PMI.txt file.
 }
 \description{
-Conduct configural invariance and full metric invariance test, and identify partial metric invariance model
+Conduct configural invariance and full metric invariance test, and identify the partial metric invariance model
 }
 \details{
 Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
 
-Since all Level 1 (within-group) variables are group-mean centered, intercepts and latent means of all variables at Level 1 are set to zero. Hence, only configural and metric invariance across levels are tested
-Bootstrapping is not available for multi-level model
+Since all Level 1 (within-group) variables are group-mean centered, intercepts and latent means of all variables at Level 1 are set to zero. Hence, only configural and metric invariance across levels are tested.
+Bootstrapping is not available for a multi-level model.
 
-Define the measurement model only once without specifying the level, and the function will compare the model across levels
+Define the measurement model only once without specifying the level, and the function will compare the model across levels.
 }
 \examples{
 

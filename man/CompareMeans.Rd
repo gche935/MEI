@@ -14,23 +14,23 @@ CompareMeans(
 )
 }
 \arguments{
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{model.PMI}{Partial metric invariance model (PMI.Model.R from CompareLoadings() or user-specified).}
 
-\item{Groups}{Grouping variable for cross-group comparisons}
+\item{data.source}{A data frame containing the observed variables used in the model.}
+
+\item{Groups}{Grouping variable for cross-group comparisons.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
 
-\item{alpha}{Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)}
-
-\item{PMI.Model.R}{Partial metric invariance model from CompareLoadings() or user-specified}
+\item{alpha}{Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).}
 }
 \value{
-partial scalar invariance model in PSI.txt file and results of latent means comparisons
+Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 }
 \description{
-Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means
+Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means.
 }
 \details{
 Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."

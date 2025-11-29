@@ -13,16 +13,14 @@ library(MASS)  ## load MASS
 # ==================== Creating Function "Full_MEI" ==================== #
 #' Full Measurement Invariance Test
 #'
-#' Conduct configural invariance, full metric invariance and full scalar invariance tests
+#' Conduct configural invariance, full metric invariance and full scalar invariance tests.
 #'
-#' Missing values are handled with full-information maximum likelihood.
-#'
-#' @param model User-specified CFA model
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param Groups Grouping variable for cross-group comparisons
+#' @param model User-specified CFA model.
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
 #'
-#' @return lavaan outputs, model fit for configural, metric and scalar invariance models, summary of fit statistics for each model
+#' @return lavaan outputs, model fit for configural, metric and scalar invariance models, summary of fit statistics for each model.
 #' @export
 #' @examples
 #'
@@ -190,7 +188,7 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
   print(as.data.frame(Sub.fit.summary), right = TRUE, row.names=F, quote=F)
   cat("\n")
 
-} ## End (Function Full_MEI) 
+} ## End (Function Full_MEI)
 
 # ==================== Finish Function "Full_MEI" ==================== #
 
@@ -201,18 +199,18 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 # ==================== Create Function "CompareLoadings" ==================== #
 #' Metric Invariance Test
 #'
-#' Conduct a full metric invariance test and identify a partial metric invariance model
+#' Conduct a full metric invariance test and identify a partial metric invariance model.
 #'
 #' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
 #'
 #'
-#' @param model User-specified CFA model
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param Groups Grouping variable for cross-group comparisons
+#' @param model User-specified CFA model.
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return partial metric invariance model in PMI.txt file
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
 #'
@@ -811,9 +809,9 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
         rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", "c(", paste0(R.Model[1,], collapse=","), ")*", names.ov[(FL.kr+1)], " + "))
       Recommend.Model <-
         rbind(Recommend.Model, paste0("  c(",paste0(R.Model[2, ], collapse=","),")*", names.ov[(FL.kr+no.items[factor.no])]))
-    }  ## End (Models with 2 items) 
+    }  ## End (Models with 2 items)
 
-  } ## End (loop factor.no) 
+  } ## End (loop factor.no)
 
 
   Recommend.Model <- rbind(Recommend.Model, "  '")  ## last line of Recommended Model
@@ -871,7 +869,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
   cat(rep("\n",2),"The recommended model PMI.Model.R is saved in the file 'PMI.txt'", "\n")
 
-} ## End (Function CompareLoadings) 
+} ## End (Function CompareLoadings)
 
 # ==================== Finish Function "CompareLoadings" ==================== #
 
@@ -881,18 +879,18 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 # ==================== Create Function "CompareMeans" ==================== #
 #' Scalar Invariance Test and Compare Latent Means
 #'
-#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means
+#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means.
 #'
 #' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
 #'
 #'
-#' @param PMI.Model.R Partial metric invariance model from CompareLoadings() or user-specified
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param Groups Grouping variable for cross-group comparisons
+#' @param model.PMI Partial metric invariance model (PMI.Model.R from CompareLoadings() or user-specified).
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
 #'
@@ -1759,9 +1757,9 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         Recommend.Model[nrow(Recommend.Model)] <-
           paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ov[(sum(no.items[1:(factor.no-1)])+2)], " ~ c(",paste0(R.Model[2, ], collapse=","), ")*1","\n")
       } ## end if factor.no == 1
-    }  ## End (Models with 2 items) 
+    }  ## End (Models with 2 items)
 
-  } ## End (loop factor.no) 
+  } ## End (loop factor.no)
 
 
   Recommend.Model[1] <- sub("''","'", Recommend.Model[1])
@@ -2010,11 +2008,11 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
     cat("\n")
 
-  } ## End (factor.no loop) 
+  } ## End (factor.no loop)
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
 
-} ## End (Function CompareMeans) 
+} ## End (Function CompareMeans)
 
 # ==================== Finish Function "CompareMeans" ==================== #
 
@@ -2024,19 +2022,19 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 # ==================== Create Function "CompareParameters" ==================== #
 #' Compare Defined Parameters Across Groups
 #'
-#' Conduct defined parameters across groups, e.g., direct, indirect and total effects
+#' Conduct defined parameters across groups, e.g., direct, indirect and total effects.
 #'
 #' Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific mediation effects in complex latent variable models. Organizational Research Methods, 15, 3-16.
 #'
 #'
-#' @param PMI.Model.R Partial metric invariance model from CompareLoadings() or user-specified
-#' @param model.DP model with defined parameters
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param Groups Grouping variable for cross-group comparisons
+#' @param model.PMI Partial metric invariance model (PMI.Model.R from CompareLoadings() or user-specified).
+#' @param model.PATH model with defined parameters.
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#'
+#' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 #' @export
 #' @examples
 #'
@@ -2481,21 +2479,21 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 # ==================== Create Function "MLCompareLoadings" ==================== #
 #' Metric Invariance Test Between Level 1 and Level 2
 #'
-#' Conduct configural invariance and full metric invariance test, and identify partial metric invariance model
+#' Conduct configural invariance and full metric invariance test, and identify the partial metric invariance model
 #'
 #' Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
 #'
-#' Since all Level 1 (within-group) variables are group-mean centered, intercepts and latent means of all variables at Level 1 are set to zero. Hence, only configural and metric invariance across levels are tested
-#' Bootstrapping is not available for multi-level model
+#' Since all Level 1 (within-group) variables are group-mean centered, intercepts and latent means of all variables at Level 1 are set to zero. Hence, only configural and metric invariance across levels are tested.
+#' Bootstrapping is not available for a multi-level model.
 #'
-#' Define the measurement model only once without specifying the level, and the function will compare the model across levels
+#' Define the measurement model only once without specifying the level, and the function will compare the model across levels.
 #'
 #'
-#' @param model User-specified CFA model
-#' @param data.source A data frame containing the observed variables used in the model
+#' @param model User-specified measurement model.
+#' @param data.source A data frame containing the observed variables used in the model.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return partial metric invariance model in PMI.txt file
+#' @param alpha Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method for multi-level models.
+#' @return Partial metric invariance model in PMI.txt file.
 #' @export
 #' @examples
 #'
@@ -3074,9 +3072,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       Recommend.Model <-
         rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 2],"*", names.ov[(FL.kr+no.items[factor.no])])))
 
-    }  ## End (Models with 2 items) 
+    }  ## End (Models with 2 items)
 
-  } ## End (loop factor.no) 
+  } ## End (loop factor.no)
 
   Recommend.Model <- rbind(Recommend.Model, "  '")  ## last line of Recommended Model
 
@@ -3166,15 +3164,15 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #'
 #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
 #'
-#' Residuals of indicators are covaried across time automatically
+#' Residuals of indicators are covaried across time/sources automatically.
 #'
-#' @param model User-specified CFA model
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param no.waves Number of waves for comparisons
+#' @param model User-specified measurement model.
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param no.waves Number of waves/sources for comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 #' @export
 #' @examples
 #'
@@ -3204,13 +3202,14 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' ## ===== Compare Factor Loadings ===== ##
 #' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
 #'
-LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, alpha=0.01) {
+LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
 
   options("width"=210)
 
   model <<- model
-#  model = Model.D
-#  data.source = Data.D
+#  Bootstrap = 0 # Number of bootstrap samples
+#  model = Model.C
+#  data.source = Example.C
 #  alpha = 0.01
 #  Cluster="NULL"
 #  no.waves <- 3
@@ -3221,6 +3220,18 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 
   names.lv <- lavaan::lavNames(model, type = "lv")  # factor name
   names.ov.or <- lavaan::lavNames(model, type = "ov.ind")  # name of indicators in input model
+
+  ## Check for bootstrap sample number (Bootstrap) ##
+  if (Bootstrap !=0) {
+    b.no.integer <- Bootstrap == round(Bootstrap)
+    if (b.no.integer == "FALSE") stop("Bootstrap sample number must be an integer")
+    if (Bootstrap > 10000) stop("Bootstrap sample number greater than 10,000 is not recommended")
+    if (Bootstrap < 500) stop("Bootstrap sample number smaller than 500 is not recommended")
+    TYPE = "Bootstrap"
+    b.no <- Bootstrap
+  } else {
+    TYPE = "MonteCarlo"
+  }
 
   no.lv <- length(names.lv)
   no.ov <- length(names.ov.or)
@@ -3323,11 +3334,42 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 
   cat(rep("\n", 3), "## ======= METRIC INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
 
-  ## Monte Carlo Simulation ##
-  mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
-  bootcoef <- mcmc
-  bootno <- nrow(mcmc)  # No. of successful simulated samples
-  cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
+  if (TYPE == "MonteCarlo") {
+
+    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    bootcoef <- mcmc
+    bootno <- nrow(mcmc)  # No. of successful simulated samples
+    cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
+
+  } else { # TYPE=Bootstrap
+
+    ## == Simplified bootstrapping model == ##
+    Model.Long.config <- lavaan::cfa(Model.Long, data = data.source, group=Groups,
+                            meanstructure = TRUE,
+                            auto.fix.first = FALSE,
+                            marker.int.zero = TRUE,
+                            ordered = FALSE,
+                            missing = "fiml", se = "none", test = "none", check.start = FALSE, check.post = FALSE, check.gradient = FALSE)
+
+    ## == Bootstrapping == ##
+    bootcoef <- lavaan::bootstrapLavaan(Model.Long.config, R = b.no, ncpus = max(1L, parallel::detectCores() - 1L), parallel="snow")
+
+    # Remove error and nonadmissible bootstrap samples #
+    B.na <- attr(bootcoef,"nonadmissible")
+    B.er <- attr(bootcoef,"error.idx")
+    B.de <- c(B.na,B.er)
+    if (length(B.de) != 0) {
+      B.re <- bootcoef[-c(B.de),]
+      bootcoef <- B.re
+    }
+    bootno <- nrow(bootcoef)  # number of successful bootstrap samples
+    cat(paste0("Number of Successful Bootstrapped Samples = ", bootno, "\n"))
+    bootcoef <- bootcoef[,ext]
+
+  } ## end MonteCarlo or Bootstrap
+
+
+
 
   ## == Start the factor.no loop for CompareLoadings == ##
   for (factor.no in 1: no.factor) {
@@ -3860,9 +3902,9 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
       }
       Recommend.Model <- rbind(Recommend.Model, "\n")
 
-    }  ## End (Models with 2 items) 
+    }  ## End (Models with 2 items)
 
-  } ## End (loop factor.no) 
+  } ## End (loop factor.no)
 
   Recommend.Model <- rbind(Recommend.Model, "  '", "\n")  ## last line of Recommended Model
 
@@ -3962,19 +4004,19 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 # ==================== Create Function "LGCompareMeans" ==================== #
 #' Scalar Invariance Test and Compare Latent Means in Longitudinal Models
 #'
-#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time
+#' Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time/sources.
 #'
 #' Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
 #'
-#' Residuals of indicators are covaried across time automatically
+#' Residuals of indicators are covaried across time/sources automatically.
 #'
-#' @param PMI.Model.R Partial metric invariance model from LGCompareLoadings() or user-specified
-#' @param data.source A data frame containing the observed variables used in the model
-#' @param no.waves Number of waves for comparisons
+#' @param model.PMI Partial metric invariance model (PMI.Model.R from LGCompareLoadings() or user-specified).
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param no.waves Number of waves/sources for comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping
-#' @param alpha Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)
-#' @return partial scalar invariance model in PSI.txt file and results of latent means comparisons
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#' @param alpha Type I error rate(default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
 #'
@@ -3997,8 +4039,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, al
 #' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
 #'
 #'
-#' ## == Example C - Non-independent Data from two sources == ## 
-#'  
+#' ## == Example C - Non-independent Data from two sources == ##
+#'
 #' # Data file is "Example.C"
 #'
 #' ## Not run:
@@ -4982,9 +5024,9 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
         Recommend.Model <- rbind(Recommend.Model, "'", "\n")
 
 
-    }  ## End (Models with 2 items) 
+    }  ## End (Models with 2 items)
 
-  } ## End (loop factor.no) 
+  } ## End (loop factor.no)
 
 
 
@@ -5262,11 +5304,11 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
     cat("\n")
 
-  } # End (factor.no loop) 
+  } # End (factor.no loop)
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
 
-} ## End (Function LGCompareMeans) 
+} ## End (Function LGCompareMeans)
 
 # ==================== Finish Function "LGCompareMeans" ==================== #
 
@@ -6071,7 +6113,7 @@ listanddelete <- function(no_item = 5, no_nipair = 2, nipair = c(1,3,1,5)) {
     }
   }
 
-}  ## End (Function listanddelete) 
+}  ## End (Function listanddelete)
 
 ## ==========  Finish Function List and Delete ========== ##
 

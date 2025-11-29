@@ -14,25 +14,23 @@ CompareParameters(
 )
 }
 \arguments{
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{model.PMI}{Partial metric invariance model (PMI.Model.R from CompareLoadings() or user-specified).}
 
-\item{Groups}{Grouping variable for cross-group comparisons}
+\item{model.PATH}{model with defined parameters.}
+
+\item{data.source}{A data frame containing the observed variables used in the model.}
+
+\item{Groups}{Grouping variable for cross-group comparisons.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping}
-
-\item{PMI.Model.R}{Partial metric invariance model from CompareLoadings() or user-specified}
-
-\item{model.DP}{model with defined parameters}
-
-\item{alpha}{Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
 }
 \value{
-estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups
+Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 }
 \description{
-Conduct defined parameters across groups, e.g., direct, indirect and total effects
+Conduct defined parameters across groups, e.g., direct, indirect and total effects.
 }
 \details{
 Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific mediation effects in complex latent variable models. Organizational Research Methods, 15, 3-16.

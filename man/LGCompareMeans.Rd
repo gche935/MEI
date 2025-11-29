@@ -14,28 +14,28 @@ LGCompareMeans(
 )
 }
 \arguments{
-\item{data.source}{A data frame containing the observed variables used in the model}
+\item{model.PMI}{Partial metric invariance model (PMI.Model.R from LGCompareLoadings() or user-specified).}
+
+\item{data.source}{A data frame containing the observed variables used in the model.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{no.waves}{Number of waves for comparisons}
+\item{no.waves}{Number of waves/sources for comparisons.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (Default) will be used instead of Bootstrapping}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
 
-\item{alpha}{Type I error rate for identifying non-invariant items in the List and Delete method. Default is 0.01 (0.05 for MLCFA).  Can also use Bonferroni adjustment (Type I error /No. of comparisons)}
-
-\item{PMI.Model.R}{Partial metric invariance model from LGCompareLoadings() or user-specified}
+\item{alpha}{Type I error rate(default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).}
 }
 \value{
-partial scalar invariance model in PSI.txt file and results of latent means comparisons
+Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 }
 \description{
-Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time
+Conduct scalar invariance test, identify partial scalar invariance model, and compare latent means across time/sources.
 }
 \details{
 Requires defining the measurement model only once. All indicators should have the suffix _T1, _T2 and _T3 (e.g., x1_T1, x1_T2, x1_T3) in the data file to indicate when the item was measured.
 
-Residuals of indicators are covaried across time automatically
+Residuals of indicators are covaried across time/sources automatically.
 }
 \examples{
 
@@ -58,8 +58,8 @@ LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
 LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
 
 
-## == Example C - Non-independent Data from two sources == ## 
- 
+## == Example C - Non-independent Data from two sources == ##
+
 # Data file is "Example.C"
 
 ## Not run:

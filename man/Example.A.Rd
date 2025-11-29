@@ -11,28 +11,28 @@ A data frame with 2800 rows and 17 variables:
   \item{Region}{Character, Grouping variable for Groups: European region ("North West", "Nordic", "Continental", "Southern", "Central East", "North East" and "South East").}
   \item{Org Size}{Numeric, control variable - organization size.}
   \item{Tenure}{Numeric, control variable - tenure in years.}
-  \item{R45a}{Numeric, Reverse-coded work-life conflict item 45a: from 1 (never) to 5 (always)}
-  \item{R45b}{Numeric, Reverse-coded work-life conflict item 45b: from 1 (never) to 5 (always)}
-  \item{R45c}{Numeric, Reverse-coded work-life conflict item 45c: from 1 (never) to 5 (always)}
-  \item{R45d}{Numeric, Reverse-coded work-life conflict item 45d: from 1 (never) to 5 (always)}
-  \item{R45e}{Numeric, Reverse-coded work-life conflict item 45e: from 1 (never) to 5 (always)}
-  \item{R90a}{Numeric, Reverse-coded engagement item 90a: from 1 (never) to 5 (always)}
-  \item{R90b}{Numeric, Reverse-coded engagement item 90b: from 1 (never) to 5 (always)}
-  \item{R90c}{Numeric, Reverse-coded engagement item 90c: from 1 (never) to 5 (always)}
-  \item{R87a}{Numeric, Reverse-coded psychological wellbeing item 87a: from 1 (at no time) to 6 (all of the time)}
-  \item{R87b}{Numeric, Reverse-coded psychological wellbeing item 87b: from 1 (at no time) to 6 (all of the time)}
-  \item{R87c}{Numeric, Reverse-coded psychological wellbeing item 87c: from 1 (at no time) to 6 (all of the time)}
-  \item{R87d}{Numeric, Reverse-coded psychological wellbeing item 87d: from 1 (at no time) to 6 (all of the time)}
-  \item{R87e}{Numeric, Reverse-coded psychological wellbeing item 87e: from 1 (at no time) to 6 (all of the time)}
+  \item{R45a}{Numeric, Reverse-coded work-life conflict item 45a: from 1 (never) to 5 (always).}
+  \item{R45b}{Numeric, Reverse-coded work-life conflict item 45b: from 1 (never) to 5 (always).}
+  \item{R45c}{Numeric, Reverse-coded work-life conflict item 45c: from 1 (never) to 5 (always).}
+  \item{R45d}{Numeric, Reverse-coded work-life conflict item 45d: from 1 (never) to 5 (always).}
+  \item{R45e}{Numeric, Reverse-coded work-life conflict item 45e: from 1 (never) to 5 (always).}
+  \item{R90a}{Numeric, Reverse-coded engagement item 90a: from 1 (never) to 5 (always).}
+  \item{R90b}{Numeric, Reverse-coded engagement item 90b: from 1 (never) to 5 (always).}
+  \item{R90c}{Numeric, Reverse-coded engagement item 90c: from 1 (never) to 5 (always).}
+  \item{R87a}{Numeric, Reverse-coded psychological wellbeing item 87a: from 1 (at no time) to 6 (all of the time).}
+  \item{R87b}{Numeric, Reverse-coded psychological wellbeing item 87b: from 1 (at no time) to 6 (all of the time).}
+  \item{R87c}{Numeric, Reverse-coded psychological wellbeing item 87c: from 1 (at no time) to 6 (all of the time).}
+  \item{R87d}{Numeric, Reverse-coded psychological wellbeing item 87d: from 1 (at no time) to 6 (all of the time).}
+  \item{R87e}{Numeric, Reverse-coded psychological wellbeing item 87e: from 1 (at no time) to 6 (all of the time).}
 }
 }
 \source{
-Simulated dataset (400 observations for each region) based on the 6th European Working Conditions Survey (EWCS 2015; Eurofound, 2024) -- Examined the life and working conditions of 43,850 respondents in 35 European countries, which were divided into seven regions: North West, Nordic, Continental, Southern, Central East, North East and South East
+Simulated dataset (400 observations for each region) based on the 6th European Working Conditions Survey (EWCS 2015; Eurofound, 2024) -- Examined the life and working conditions of 43,850 respondents in 35 European countries, which were divided into seven regions: North West, Nordic, Continental, Southern, Central East, North East and South East.
 }
 \usage{
 Example.A
 }
 \description{
-Simulated dataset for demonstrating Full_MEI(), CompareLoadings(), CompareMeans(), and CompareParameters()
+Simulated dataset for demonstrating Full_MEI(), CompareLoadings(), CompareMeans(), and CompareParameters().
 }
 \keyword{datasets}
