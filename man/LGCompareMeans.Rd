@@ -39,6 +39,25 @@ Residuals of indicators are covaried across time automatically
 }
 \examples{
 
+
+## == Example B - Panel Data in Longitudinal Studies == ##
+
+# Data file is "Example.B"
+
+## Not run:
+## Specify the measurement model - Model.B ##
+Model.B <- '
+  SWLC =~ x1 + x2 + x3 + x4 + x5
+'
+
+## ===== Compare Factor Loadings ===== ##
+LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+## End (Not run)
+
+## ===== Compare Means ===== ##
+LGCompareMeans(PMI.Model.R, Example.B, no.waves = 2, alpha = 0.01)
+
+
 ## == Example C - Non-independent Data from two sources == ## 
  
 # Data file is "Example.C"
