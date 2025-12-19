@@ -295,7 +295,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   ## Request summary outputs
   #$   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
 
-  # Model.config <<- Model.config # Save Model.config to Global Environment
+  Model.config <<- Model.config # Save Model.config to Global Environment
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -1110,6 +1110,9 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
   ## == Start the factor.no loop for CompareIntercepts == ##
   for (factor.no in 1: no.factor) {
+
+    alpha <- ERate[factor.no]
+
     FL.kr <<- 1  ## location of first FL
     if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
     TX.kr <<- FL.kr + no.lx.g ## location of first TX
@@ -2725,6 +2728,8 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   ## == Start the factor.no loop for CompareLoadings == ##
   for (factor.no in 1: no.factor) {
 
+    alpha <- ERate[factor.no]
+
     FL.kr <<- 1  ## location of first FL
     if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
 
@@ -3517,6 +3522,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   ## == Start the factor.no loop for CompareLoadings == ##
   for (factor.no in 1: no.factor) {
+
+    alpha <- ERate[factor.no]
 
     FL.kr <<- 1  ## location of first FL
     if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
@@ -4420,6 +4427,9 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
   ## == Start the factor.no loop for CompareIntercepts == ##
   for (factor.no in 1: no.factor) {
+
+    alpha <- ERate[factor.no]
+
     FL.kr <<- 1  ## location of first FL
     if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
     TX.kr <<- FL.kr + no.lx.g ## location of first TX
