@@ -109,9 +109,6 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #$  print(PFitDiff)
 
 
-  ## Compare fit indices across models ##
-  print(lavaan::lavTestLRT(Model.config, Model.metric, Model.scalar))
-
   XX <- sapply(list(Model.config, Model.metric, Model.scalar), lavaan::fitMeasures, c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.robust", "cfi.robust", "tli.robust", "srmr", "aic", "bic"))
 
   MODFIT <- matrix(1:27, nrow = 3, dimnames = list(c("Model.config", "Model.metric", "Model.scalar"), c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.robust", "  cfi.robust", "  tli.robust", "  srmr", "  aic", "  bic")))
@@ -155,6 +152,8 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
   cat("####    MODEL FIT INDICES   ####", rep("\n", 2))
   print(MODFIT, quote=FALSE, right=TRUE)
 
+  ## Compare fit indices across models ##
+  print(lavaan::lavTestLRT(Model.config, Model.metric, Model.scalar))
 
   cat(rep("\n", 3))
   cat("####  DIFFERENCES IN FIT INDICES  ####", rep("\n", 2))
@@ -295,7 +294,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   ## Request summary outputs
   #$   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
 
-  Model.config <<- Model.config # Save Model.config to Global Environment
+  Model.config <<- Model.config
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -341,7 +340,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no] - 1)*no.group
+      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
       ERate[factor.no] <- Type1 / no.adjust
       cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
@@ -879,12 +878,75 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   cat(rep("\n", 3), "## Request summary outputs")
   cat(rep("\n", 2), paste0("  print(summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
 
-  cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
-  cat("\n", "  FitDiff <- semTools::compareFit(Model.config, PMI.Model.fit, nested = TRUE)", "\n")
-  cat("   summary(FitDiff, nd=4)", "\n")
-
   sink()  ## Stop writing to file
-  source('PMI.txt') ## Run the script
+
+
+  eval(parse(text = Recommend.Model))
+  PMI.Model.R <<- PMI.Model.R
+  ## == Run PMI.Model.R == ##
+  if (Cluster == "NULL") {
+    eval(parse(text=   "PMI.Model.fit <- lavaan::sem(PMI.Model.R,
+                       data.source,
+                       group = Groups,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       estimator = 'MLR')"))
+  } else {
+    eval(parse(text=   "PMI.Model.fit <- lavaan::sem(PMI.Model.R,
+                       data.source,
+                       group = Groups,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       cluster = Cluster,
+                       estimator = 'MLR')"))
+  }
+
+  print(summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  XX <- sapply(list(Model.config, PMI.Model.fit), lavaan::fitMeasures, c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.robust", "cfi.robust", "tli.robust", "srmr", "aic", "bic"))
+
+  MODFIT <- matrix(1:18, nrow = 2, dimnames = list(c("Model.config", "PMI.Model.fit"), c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.robust", "  cfi.robust", "  tli.robust", "  srmr", "  aic", "  bic")))
+  MODFIT[1,1] <- format(round((XX[1,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,2] <- format(round((XX[2,1]), digits = 4), nsmall = 0, scientific = FALSE)
+  MODFIT[1,3] <- format(round((XX[3,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,4] <- format(round((XX[4,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,5] <- format(round((XX[5,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,6] <- format(round((XX[6,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,7] <- format(round((XX[7,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,8] <- format(round((XX[8,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,9] <- format(round((XX[9,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,1] <- format(round((XX[1,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,2] <- format(round((XX[2,2]), digits = 4), nsmall = 0, scientific = FALSE)
+  MODFIT[2,3] <- format(round((XX[3,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,4] <- format(round((XX[4,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,5] <- format(round((XX[5,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,6] <- format(round((XX[6,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,7] <- format(round((XX[7,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,8] <- format(round((XX[8,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,9] <- format(round((XX[9,2]), digits = 4), nsmall = 4, scientific = FALSE)
+
+  FITDIF <- matrix(1:3, nrow = 1, dimnames = list(c("PMI.Model.fit - Model.config"), c("  cfi.robust", "  rmsea.robust", "    srmr")))
+  FITDIF[1,1] <- format(round((XX[5,2] - XX[5,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  FITDIF[1,2] <- format(round((XX[4,2] - XX[4,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  FITDIF[1,3] <- format(round((XX[7,2] - XX[7,1]), digits = 4), nsmall = 4, scientific = FALSE)
+
+  cat(rep("\n", 3))
+  cat("####    MODEL FIT INDICES   ####", rep("\n", 2))
+  print(MODFIT, quote=FALSE, right=TRUE)
+
+  cat(rep("\n",2), "## Compare fit indices across models ##", rep("\n",2))
+  print(lavaan::lavTestLRT(Model.config, PMI.Model.fit))
+
+  cat(rep("\n", 2))
+  cat("####  DIFFERENCES IN FIT INDICES  ####", rep("\n", 2))
+  print(FITDIF, quote=FALSE, right=TRUE)
+  cat(rep("\n", 3))
 
   ## == Print Factor Loadings == ##
   Final.Model.FL <- matrix(0, sum(no.items), no.group)
@@ -1006,8 +1068,6 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   ## Request summary outputs
   #$  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
 
-  PMI.Model.fit <<- PMI.Model.fit # Save PMI.Model.fit to Global Environment
-
   ## ===== End (Run model.PMI) ===== ##
 
 
@@ -1053,9 +1113,9 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no] - 1)*no.group
+      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
       ERate[factor.no] <- Type1 / no.adjust
-      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free intercepts = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
   } else if (Type1Adj == "BON") {
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
@@ -1879,16 +1939,73 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   if (Cluster != "NULL") { cat("\n", paste0("    cluster = ", arg4_char,",")) }
   cat("\n", "    estimator = 'MLR')")
 
-  cat(rep("\n", 3), "## Request summary outputs")
-  cat(rep("\n", 2), paste0("  print(summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
-
-  cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
-  cat("\n", "  FitDiff <- compareFit(PMI.Model.fit, PSI.Model.fit, nested = TRUE)", "\n")
-  cat("   summary(FitDiff)", "\n")
-
   sink()  ## Stop writing to file
 
-  source('PSI.txt') ## Run the script
+  eval(parse(text = Recommend.Model))
+  ## == Run PSI.Model.R == ##
+  if (Cluster == "NULL") {
+    eval(parse(text=   "PSI.Model.fit <- lavaan::sem(PSI.Model.R,
+                       data.source,
+                       group = Groups,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       estimator = 'MLR')"))
+  } else {
+    eval(parse(text=   "PSI.Model.fit <- lavaan::sem(PSI.Model.R,
+                       data.source,
+                       group = Groups,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       cluster = Cluster,
+                       estimator = 'MLR')"))
+  }
+
+  print(summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  XX <- sapply(list(PMI.Model.fit, PSI.Model.fit), lavaan::fitMeasures, c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.robust", "cfi.robust", "tli.robust", "srmr", "aic", "bic"))
+
+  MODFIT <- matrix(1:18, nrow = 2, dimnames = list(c("PMI.Model.fit", "PSI.Model.fit"), c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.robust", "  cfi.robust", "  tli.robust", "  srmr", "  aic", "  bic")))
+  MODFIT[1,1] <- format(round((XX[1,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,2] <- format(round((XX[2,1]), digits = 4), nsmall = 0, scientific = FALSE)
+  MODFIT[1,3] <- format(round((XX[3,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,4] <- format(round((XX[4,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,5] <- format(round((XX[5,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,6] <- format(round((XX[6,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,7] <- format(round((XX[7,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,8] <- format(round((XX[8,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[1,9] <- format(round((XX[9,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,1] <- format(round((XX[1,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,2] <- format(round((XX[2,2]), digits = 4), nsmall = 0, scientific = FALSE)
+  MODFIT[2,3] <- format(round((XX[3,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,4] <- format(round((XX[4,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,5] <- format(round((XX[5,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,6] <- format(round((XX[6,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,7] <- format(round((XX[7,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,8] <- format(round((XX[8,2]), digits = 4), nsmall = 4, scientific = FALSE)
+  MODFIT[2,9] <- format(round((XX[9,2]), digits = 4), nsmall = 4, scientific = FALSE)
+
+  FITDIF <- matrix(1:3, nrow = 1, dimnames = list(c("PSI.Model.fit - PMI.Model.fit"), c("  cfi.robust", "  rmsea.robust", "    srmr")))
+  FITDIF[1,1] <- format(round((XX[5,2] - XX[5,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  FITDIF[1,2] <- format(round((XX[4,2] - XX[4,1]), digits = 4), nsmall = 4, scientific = FALSE)
+  FITDIF[1,3] <- format(round((XX[7,2] - XX[7,1]), digits = 4), nsmall = 4, scientific = FALSE)
+
+  cat(rep("\n", 3))
+  cat("####    MODEL FIT INDICES   ####", rep("\n", 2))
+  print(MODFIT, quote=FALSE, right=TRUE)
+
+  cat(rep("\n",2), "## Compare fit indices across models ##", rep("\n",2))
+  print(lavaan::lavTestLRT(PMI.Model.fit, PSI.Model.fit))
+
+  cat(rep("\n", 2))
+  cat("####  DIFFERENCES IN FIT INDICES  ####", rep("\n", 2))
+  print(FITDIF, quote=FALSE, right=TRUE)
+  cat(rep("\n", 3))
 
   ## == Print Factor Loadings == ##
   Final.Model.FL <- matrix(0, sum(no.items), no.group)
@@ -2658,8 +2775,6 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
 
-  Model.config <<- Model.config # Save Model.config to Global Environment
-
 ## ===== End (Run Configural Model) ===== ##
 
 
@@ -2699,7 +2814,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no] - 1)*no.group
+      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
       ERate[factor.no] <- Type1 / no.adjust
       cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
@@ -3426,7 +3541,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   #$  parameterEstimates(Model.Long.config)
   cat("\n")
 
-  Model.Long.config <<- Model.Long.config # Save Model.config to Global Environment
+  Model.Long.config <<- Model.Long.config
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -3465,7 +3580,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no] - 1)*no.group
+      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
       ERate[factor.no] <- Type1 / no.adjust
       cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
@@ -3993,12 +4108,13 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         for (j in 1:(no.waves - 1)) {
           if (factor.no == 1) {
             for (k in (j+1):no.waves) {
-              Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[no.items.g*(j-1)+i], " ~~ ", names.ov[no.items.g*(k-1)+i], "\n")
+              PMI <- paste0("  ", names.ov[no.items.g*(j-1)+i], " ~~ ", names.ov[no.items.g*(k-1)+i], "\n")
+              Recommend.Model <- rbind(Recommend.Model, PMI)
             } # end for k
           } else {
             for (k in (j+1):no.waves) {
-              Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])], " ~~ ",
-                        names.ov[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
+              PMI <- paste0("  ", names.ov[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])]," ~~",names.ov[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
+              Recommend.Model <- rbind(Recommend.Model, PMI)
             } # end for k
           } # end if (factor.no == 1)
         } # end for j
@@ -4041,12 +4157,13 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         for (j in 1:(no.waves - 1)) {
           if (factor.no == 1) {
             for (k in (j+1):no.waves) {
-              Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[no.items.g*(j-1)+i], " ~~ ", names.ov[no.items.g*(k-1)+i], "\n")
+              PMI <- paste0("  ", names.ov[no.items.g*(j-1)+i], " ~~ ", names.ov[no.items.g*(k-1)+i], "\n")
+              Recommend.Model <- rbind(Recommend.Model, PMI)
             }
           } else {
             for (k in (j+1):no.waves) {
-              Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])], " ~~ ",
-                        names.ov[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
+              PMI <- paste0("  ", names.ov[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])]," ~~",names.ov[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
+              Recommend.Model <- rbind(Recommend.Model, PMI)
             }
           }
         }
@@ -4086,7 +4203,34 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   cat(rep("\n", 2), paste0("  print(summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
-  source('PMI.txt') ## Run the script
+
+#  source("PMI.txt")
+  PMI.Model.R <<- eval(parse(text=Recommend.Model))
+
+  ## == Run PMI.Model.R == ##
+  if (Cluster == "NULL") {
+    eval(parse(text=   "PMI.Model.fit <- lavaan::sem(PMI.Model.R,
+                       data.source,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       estimator = 'MLR')"))
+  } else {
+    eval(parse(text=   "PMI.Model.fit <- lavaan::sem(PMI.Model.R,
+                       data.source,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       cluster = Cluster,
+                       estimator = 'MLR')"))
+  }
+
+  print(summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 9)
@@ -4275,8 +4419,6 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
 
-  PMI.Model.fit <<- PMI.Model.fit # Save PMI.Model.fit to Global Environment
-
   ## ===== End (Run model.PMI) ===== ##
 
   par.est <- lavaan::coef(PMI.Model.fit)  # sample parameters
@@ -4370,9 +4512,9 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no] - 1)*no.group
+      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
       ERate[factor.no] <- Type1 / no.adjust
-      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free intercepts = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
   } else if (Type1Adj == "BON") {
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
@@ -5179,13 +5321,14 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
           for (j in 1:(no.waves - 1)) {
             if (factor.no == 1) {
               for (k in (j+1):no.waves) {
-                Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[(no.items[factor.no]*(j-1)+i)], " ~~ ", names.ov[no.items[factor.no]*(k-1)+i], "\n")
+                PMI <- paste0("  ", names.ov[(no.items[factor.no]*(j-1)+i)], " ~~ ", names.ov[no.items[factor.no]*(k-1)+i], "\n")
+                Recommend.Model <- rbind(Recommend.Model, PMI)
               }
             } else {
               for (k in (j+1):no.waves) {
-                Recommend.Model <- rbind(Recommend.Model, "  ", names.ov[(no.items[factor.no]*(j-1)+i + sum(no.items[1:(factor.no-1)])*no.waves)], " ~~ ",
-                          names.ov[(no.items[factor.no]*(k-1)+i + sum(no.items[1:(factor.no-1)])*no.waves)],"\n")
-
+                PMI <- paste0("  ", names.ov[(no.items[factor.no]*(j-1)+i + sum(no.items[1:(factor.no-1)])*no.waves)], " ~~ ")
+                PMI <- paste0(PMI, names.ov[(no.items[factor.no]*(k-1)+i + sum(no.items[1:(factor.no-1)])*no.waves)],"\n")
+                Recommend.Model <- rbind(Recommend.Model, PMI)
               }
             }
           }
@@ -5263,13 +5406,57 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   cat(rep("\n", 3), "## Request summary outputs")
   cat(rep("\n", 2), paste0("  print(summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
 
-  cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
-  cat("\n", "  FitDiff <- compareFit(PMI.Model.fit, PSI.Model.fit, nested = TRUE)", "\n")
-  cat("   summary(FitDiff)", "\n")
-
   sink()  ## Stop writing to file
 
-  source('PSI.txt') ## Run the script
+#  source('PSI.txt') ## Run the script
+  PSI.Model.R <<- eval(parse(text=Recommend.Model))
+
+  ## == Run PMI.Model.R == ##
+  if (Cluster == "NULL") {
+    eval(parse(text=   "PSI.Model.fit <- lavaan::sem(PSI.Model.R,
+                       data.source,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       estimator = 'MLR')"))
+  } else {
+    eval(parse(text=   "PSI.Model.fit <- lavaan::sem(PSI.Model.R,
+                       data.source,
+                       missing = 'fiml',
+                       auto.fix.first = FALSE,
+                       marker.int.zero = TRUE,
+                       meanstructure = T,
+                       information = 'observed',
+                       cluster = Cluster,
+                       estimator = 'MLR')"))
+  }
+
+  print(summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  
+  cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
+  DMODFIT <- matrix(0, nrow = 3, ncol = 9)
+  colnames(DMODFIT) <-
+        c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.scaled", "  cfi.scaled", "  tlicaled", "  srmr", "  aic", "  bic")
+  rownames(DMODFIT) <- c("PMI.Model.fit", "PSI.Model.fit", "PSI.Model.fit - PMI.Model.fit")
+  XX1 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+      c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
+  DMODFIT[1,] <- XX1
+  XX2 <- lavaan::fitMeasures(PSI.Model.fit, fit.measures=
+      c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
+  DMODFIT[2,] <- XX2
+
+  DMODFIT[3,1] <- DMODFIT[2,1] -DMODFIT[1,1]
+  DMODFIT[3,2] <- DMODFIT[2,2] -DMODFIT[1,2]
+  DMODFIT[3,3] <- pchisq(q=DMODFIT[3,1], df=DMODFIT[3,2], lower.tail=FALSE)
+  DMODFIT[3,4] <- DMODFIT[2,4] -DMODFIT[1,4]
+  DMODFIT[3,5] <- DMODFIT[2,5] -DMODFIT[1,5]
+  DMODFIT[3,6] <- DMODFIT[2,6] -DMODFIT[1,6]
+  DMODFIT[3,7] <- DMODFIT[2,7] -DMODFIT[1,7]
+  DMODFIT[3,8] <- DMODFIT[2,8] -DMODFIT[1,8]
+  DMODFIT[3,9] <- DMODFIT[2,9] -DMODFIT[1,9]
+  print(round(DMODFIT, digits=4))
 
 
   ## == Print Factor Loadings == ##
