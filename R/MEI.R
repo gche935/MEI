@@ -208,8 +208,9 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
-#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
+#' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
+#' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
 #' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
@@ -231,9 +232,9 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #' ## End (Not run)
 #'
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 #'
-CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
+CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1=0.05, Type1Adj="PFDR") {
 
   options("width"=210)
 
@@ -241,15 +242,19 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #  model = Model.A
 #  data.source = Data.A
 #  Groups = "country"
-#  alpha = 0.01
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
 #  Cluster="NULL"
+
+  Type1Adj <- toupper(Type1Adj)
+  match.arg(Type1Adj, c("PFDR","BON", "NULL"))
 
   arg1_char <- deparse(substitute(model))
   arg2_char <- deparse(substitute(data.source))
   arg3_char <- deparse(substitute(Groups))
   arg4_char <- deparse(substitute(Cluster))
 
-## Check for bootstrap sample number (Bootstrap) ##
+  ## Check for bootstrap sample number (Bootstrap) ##
   if (Bootstrap != 0) {
     b.no.integer <- Bootstrap == round(Bootstrap)
     if (b.no.integer == "FALSE") stop("Bootstrap sample number must be an integer")
@@ -259,7 +264,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
     b.no <- Bootstrap
   } else {
     TYPE = "MonteCarlo"
-  }
+  } # end (Bootstrap != 0)
 
 
   ## ========== Run Configural Model ========== ##
@@ -288,7 +293,9 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
    }  # end Cluster
 
   ## Request summary outputs
-  #$  print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
+  #$   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
+
+  # Model.config <<- Model.config # Save Model.config to Global Environment
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -325,6 +332,34 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
 
   cat(rep("\n", 3), "## ======= METRIC INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
+
+  # Calculate alpha for factor[factor.no] #
+  ERate <- matrix(1:no.factor, nrow = 1)  # error rate for each factor
+
+  cat("# -- Overall Type I Error Rates for Invariance Tests for Each Factor = ", Type1, " -- #", rep("\n", 2))
+
+  if (Type1Adj == "PFDR") {  ## print adjusted error rate
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no] - 1)*no.group
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "BON") {
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "NULL") {
+    cat("# -- Error Rates for Invariance Tests (No adjustment is made) -- #", rep("\n", 2))
+    cat(paste0("Type I Error Rate for Invariance Tests = ", Type1, "\n"))
+    for (factor.no in 1: no.factor) {
+      ERate[factor.no] <- Type1
+    } # end (for factor.no)
+  } # end (Type1Adj)
+  cat(rep("\n",2))
 
   if (TYPE == "MonteCarlo") {
 
@@ -363,6 +398,8 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
   ## == Start the factor.no loop for CompareLoadings == ##
   for (factor.no in 1: no.factor) {
+
+    alpha <- ERate[factor.no]
 
     FL.kr <<- 1  ## location of first FL
     if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
@@ -843,8 +880,8 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   cat(rep("\n", 2), paste0("  print(summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
-  cat("\n", "  FitDiff <- compareFit(Model.config, PMI.Model.fit, nested = TRUE)", "\n")
-  cat("   summary(FitDiff)", "\n")
+  cat("\n", "  FitDiff <- semTools::compareFit(Model.config, PMI.Model.fit, nested = TRUE)", "\n")
+  cat("   summary(FitDiff, nd=4)", "\n")
 
   sink()  ## Stop writing to file
   source('PMI.txt') ## Run the script
@@ -888,8 +925,9 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
-#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
+#' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
+#' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -899,22 +937,26 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' Full_MEI(Model.A, Example.A, Groups = "Region")
 #'
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Intercepts and Latent Means ===== ##
-#' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", alpha = 0.001)
+#' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 #'
-CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, alpha=0.01) {
+CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
 
   options("width"=210)
 
 #  Bootstrap = 2000 # Number of bootstrap samples
 #  model.PMI = PMI.Model.R
-#  data.source = Example.B4
-#  Groups = "MOTIVE"
+#  data.source = Example.A
+#  Groups = "country"
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
 #  Cluster="NULL"
-#  alpha = 0.01
+
+  Type1Adj <- toupper(Type1Adj)
+  match.arg(Type1Adj, c("PFDR","BON", "NULL"))
 
   arg1_char <- deparse(substitute(model.PMI))
   arg2_char <- deparse(substitute(data.source))
@@ -931,7 +973,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     b.no <- Bootstrap
   } else {
     TYPE = "MonteCarlo"
-  }
+  } # end (Bootstrap != 0)
 
   count.tx <- 0
 
@@ -963,6 +1005,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
   ## Request summary outputs
   #$  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  PMI.Model.fit <<- PMI.Model.fit # Save PMI.Model.fit to Global Environment
 
   ## ===== End (Run model.PMI) ===== ##
 
@@ -1000,6 +1044,34 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   no.lx.g <- no.par.g/2 # number of estimated LX per group #
 
   cat(rep("\n", 3), "## ======= SCALAR INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
+
+  # Calculate alpha for factor[factor.no] #
+  ERate <- matrix(1:no.factor, nrow = 1)  # error rate for each factor
+
+  cat("# -- Overall Type I Error Rates for Invariance Tests for Each Factor = ", Type1, " -- #", rep("\n", 2))
+
+  if (Type1Adj == "PFDR") {  ## print adjusted error rate
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no] - 1)*no.group
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "BON") {
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "NULL") {
+    cat("# -- Error Rates for Invariance Tests (No adjustment is made) -- #", rep("\n", 2))
+    cat(paste0("Type I Error Rate for Invariance Tests = ", Type1, "\n"))
+    for (factor.no in 1: no.factor) {
+      ERate[factor.no] <- Type1
+    } # end (for factor.no)
+  } # end (Type1Adj)
+  cat(rep("\n",2))
 
   if (TYPE == "MonteCarlo") {
 
@@ -2032,7 +2104,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param Groups Grouping variable for cross-group comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #'
 #' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 #' @export
@@ -2051,10 +2123,10 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #' Full_MEI(Model.A, Example.A, Groups = "Region")
 #'
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 #' ## End (Not run)
 #'
-#' ## ===== Compare Paths ===== ##
+#' ## ===== Compare Parameters ===== ##
 #' # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
 #' model.DP <- '
 #'   Wellbeing ~ Xb1*Engagement + Xc1*WorkLifeConflict + Xd1*OrgSize + Xe1*Tenure
@@ -2076,8 +2148,8 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #  model.PMI <- PMI.Model.R
 #  model.PATH <- model.DP
 #  Bootstrap = 2000 # Number of bootstrap samples
-#  data.source = Example.B4
-#  Groups = "MOTIVE"
+#  data.source = Example.A
+#  Groups = "country"
 #  Cluster="NULL"
 
   model.SEM <- rbind(model.PMI, model.PATH)
@@ -2236,6 +2308,8 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
   ## Request summary outputs
   print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  SEM.Model.fit <<- SEM.Model.fit # Save SEM.Model.fit to Global Environment
 
   ## ===== End (Run model.SEM) ===== ##
 
@@ -2492,33 +2566,38 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param model User-specified measurement model.
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param alpha Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method for multi-level models.
+#' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
+#' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
 #' @return Partial metric invariance model in PMI.txt file.
 #' @export
 #' @examples
 #'
 #' ## == Example D - Multilevel Confirmatory Factor Analysis == ##
-#' # Data file is "Example.A"; cluster variable is "ID"
+#' # Data file is "Example.D"; cluster variable is "ID"
 #'
 #' ## Specify the measurement model - Model.D ##
 #' Model.D <- 'OLBI =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8'
 #'
 #' ## ===== Compare Loadings ===== ##
-#' MLCompareLoadings(Model.D, Example.D, Cluster = "ID", alpha = 0.05)
+#' MLCompareLoadings(Model.D, Example.D, Cluster = "ID", Type1 = 0.05, Type1Adj = "PFDR")
 #'
-  MLCompareLoadings <- function(model, data.source, Cluster="NULL", alpha=0.05) {
+  MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR") {
 
   options("width"=210)
 
-#  model = Model.A
-#  data.source = Demo.twolevel
-#  alpha = 0.01
+#  model = Model.D
+#  data.source = Example.D
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
 #  Cluster="cluster"
-  no.group <- 2
+
+  Type1Adj <- toupper(Type1Adj)
+  match.arg(Type1Adj, c("PFDR","BON", "NULL"))
 
   arg2_char <<- deparse(substitute(data.source))
   arg4_char <<- deparse(substitute(Cluster))
 
+  no.group <- 2
 
   ## ===== Create Multilevel Model Model.ML.X ===== ##
 
@@ -2575,6 +2654,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
+
+  Model.config <<- Model.config # Save Model.config to Global Environment
+
 ## ===== End (Run Configural Model) ===== ##
 
 
@@ -2605,6 +2687,34 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
   cat(rep("\n", 3), "## ======= METRIC INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
+
+# Calculate alpha for factor[factor.no] #
+  ERate <- matrix(1:no.factor, nrow = 1)  # error rate for each factor
+
+  cat("# -- Overall Type I Error Rates for Invariance Tests for Each Factor = ", Type1, " -- #", rep("\n", 2))
+
+  if (Type1Adj == "PFDR") {  ## print adjusted error rate
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no] - 1)*no.group
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "BON") {
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "NULL") {
+    cat("# -- Error Rates for Invariance Tests (No adjustment is made) -- #", rep("\n", 2))
+    cat(paste0("Type I Error Rate for Invariance Tests = ", Type1, "\n"))
+    for (factor.no in 1: no.factor) {
+      ERate[factor.no] <- Type1
+    } # end (for factor.no)
+  } # end (Type1Adj)
+  cat(rep("\n",2))
 
   ## Monte Carlo Simulation ##
   mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
@@ -2856,8 +2966,6 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
         }  ## end if pno_nipair
       } ## end loop Arg
     } ## end loop Referent
-
-
 
   if (length(unique(flY[, no.group+1])) == 2 & no.items[factor.no] == 2) { # Only 2 groups with more than 2 items
     flX <<- matrix(1:(no.group+2), 1, (no.group+2))
@@ -3170,9 +3278,10 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param no.waves Number of waves/sources for comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
-#' @param alpha Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
-#' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
+#' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
+#' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
 #'
@@ -3186,7 +3295,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
 #'
 #'
 #' ## == Example C - Non-independent Data from two sources == ##
@@ -3200,9 +3309,10 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
+
 #'
-LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
+LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
 
   options("width"=210)
 
@@ -3210,13 +3320,18 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #  Bootstrap = 0 # Number of bootstrap samples
 #  model = Model.C
 #  data.source = Example.C
-#  alpha = 0.01
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
 #  Cluster="NULL"
 #  no.waves <- 3
-  no.group <- no.waves
+
+  Type1Adj <- toupper(Type1Adj)
+  match.arg(Type1Adj, c("PFDR","BON", "NULL"))
 
   arg2_char <<- deparse(substitute(data.source))
   arg4_char <<- deparse(substitute(Cluster))
+
+  no.group <- no.waves
 
   names.lv <- lavaan::lavNames(model, type = "lv")  # factor name
   names.ov.or <- lavaan::lavNames(model, type = "ov.ind")  # name of indicators in input model
@@ -3231,7 +3346,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     b.no <- Bootstrap
   } else {
     TYPE = "MonteCarlo"
-  }
+  } # end (Bootstrap != 0)
 
   no.lv <- length(names.lv)
   no.ov <- length(names.ov.or)
@@ -3305,6 +3420,9 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   print(lavaan::summary(Model.Long.config, fit.measure = T, standardized = T, rsq = T))
   #$  parameterEstimates(Model.Long.config)
   cat("\n")
+
+  Model.Long.config <<- Model.Long.config # Save Model.config to Global Environment
+
   ## ===== End (Run Configural Model) ===== ##
 
 
@@ -3333,6 +3451,34 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
 
   cat(rep("\n", 3), "## ======= METRIC INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
+
+  # Calculate alpha for factor[factor.no] #
+  ERate <- matrix(1:no.factor, nrow = 1)  # error rate for each factor
+
+  cat("# -- Overall Type I Error Rates for Invariance Tests for Each Factor = ", Type1, " -- #", rep("\n", 2))
+
+  if (Type1Adj == "PFDR") {  ## print adjusted error rate
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no] - 1)*no.group
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "BON") {
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "NULL") {
+    cat("# -- Error Rates for Invariance Tests (No adjustment is made) -- #", rep("\n", 2))
+    cat(paste0("Type I Error Rate for Invariance Tests = ", Type1, "\n"))
+    for (factor.no in 1: no.factor) {
+      ERate[factor.no] <- Type1
+    } # end (for factor.no)
+  } # end (Type1Adj)
+  cat(rep("\n",2))
 
   if (TYPE == "MonteCarlo") {
 
@@ -3367,8 +3513,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     bootcoef <- bootcoef[,ext]
 
   } ## end MonteCarlo or Bootstrap
-
-
 
 
   ## == Start the factor.no loop for CompareLoadings == ##
@@ -3997,7 +4141,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 } ## End (Function LGCompareLoadings)
 
 # ==================== Finish Function "LGCompareLoadings" ==================== #
-## system.time(LGCompareLoadings(Model.D, Data.D, no.waves=3, alpha=0.01))
 
 
 
@@ -4014,8 +4157,9 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' @param data.source A data frame containing the observed variables used in the model.
 #' @param no.waves Number of waves/sources for comparisons.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
-#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.
-#' @param alpha Type I error rate(default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
+#' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
+#' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -4032,11 +4176,11 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Means ===== ##
-#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
+#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
 #'
 #'
 #' ## == Example C - Non-independent Data from two sources == ##
@@ -4051,28 +4195,32 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Means ===== ##
-#' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, alpha = 0.01)
+#' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
 #'
-LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, alpha=0.01) {
+LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
 
   options("width"=210)
 
 #  Bootstrap = 0 # Number of bootstrap samples
 #  model.PMI = PMI.Model.R
-#  data.source = Data.D
-#  alpha = 0.01
+#  data.source = Data.B
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
 #  Cluster="NULL"
-#  no.waves <- 2
-  no.group <- no.waves
+#  no.waves <- 3
 
+  Type1Adj <- toupper(Type1Adj)
+  match.arg(Type1Adj, c("PFDR","BON", "NULL"))
 
   arg1_char <- deparse(substitute(model.PMI))
   arg2_char <- deparse(substitute(data.source))
   arg4_char <- deparse(substitute(Cluster))
+
+  no.group <- no.waves
 
   names.ov.model <- lavaan::lavNames(model, type = "ov")  # item name of input model
   names.lv.model <- lavaan::lavNames(model, type = "lv")  # item name of input model
@@ -4087,7 +4235,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     b.no <- Bootstrap
   } else {
     TYPE = "MonteCarlo"
-  }
+  } # end (Bootstrap != 0)
 
   count.tx <- 0
 
@@ -4119,6 +4267,8 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   cat(rep("\n", 2), "## ===== Partial Metric Invariance Model ===== ##", "\n")
   print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
   cat("\n")
+
+  PMI.Model.fit <<- PMI.Model.fit # Save PMI.Model.fit to Global Environment
 
   ## ===== End (Run model.PMI) ===== ##
 
@@ -4204,6 +4354,34 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
 
   cat(rep("\n", 3), "## ======= SCALAR INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
+
+  # Calculate alpha for factor[factor.no] #
+  ERate <- matrix(1:no.factor, nrow = 1)  # error rate for each factor
+
+  cat("# -- Overall Type I Error Rates for Invariance Tests for Each Factor = ", Type1, " -- #", rep("\n", 2))
+
+  if (Type1Adj == "PFDR") {  ## print adjusted error rate
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no] - 1)*no.group
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "BON") {
+    cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
+    for (factor.no in 1: no.factor) {
+      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      ERate[factor.no] <- Type1 / no.adjust
+      cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
+    } # end (for factor.no)
+  } else if (Type1Adj == "NULL") {
+    cat("# -- Error Rates for Invariance Tests (No adjustment is made) -- #", rep("\n", 2))
+    cat(paste0("Type I Error Rate for Invariance Tests = ", Type1, "\n"))
+    for (factor.no in 1: no.factor) {
+      ERate[factor.no] <- Type1
+    } # end (for factor.no)
+  } # end (Type1Adj)
+  cat(rep("\n",2))
 
   if (TYPE == "MonteCarlo") {
 
@@ -5311,8 +5489,6 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 } ## End (Function LGCompareMeans)
 
 # ==================== Finish Function "LGCompareMeans" ==================== #
-
-## system.time(LGCompareMeans(PMI.Model.R, Data.D, Cluster="NULL", no.waves=3, alpha=0.01))
 
 
 

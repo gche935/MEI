@@ -24,7 +24,7 @@ CompareParameters(
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.}
 }
 \value{
 Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
@@ -50,10 +50,10 @@ Model.A <- '
 Full_MEI(Model.A, Example.A, Groups = "Region")
 
 ## ===== Compare Loadings ===== ##
-CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 ## End (Not run)
 
-## ===== Compare Paths ===== ##
+## ===== Compare Parameters ===== ##
 # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
 model.DP <- '
   Wellbeing ~ Xb1*Engagement + Xc1*WorkLifeConflict + Xd1*OrgSize + Xe1*Tenure

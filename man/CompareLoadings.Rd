@@ -10,7 +10,8 @@ CompareLoadings(
   Groups,
   Cluster = "NULL",
   Bootstrap = 0,
-  alpha = 0.01
+  Type1 = 0.05,
+  Type1Adj = "PFDR"
 )
 }
 \arguments{
@@ -22,9 +23,11 @@ CompareLoadings(
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.}
 
-\item{alpha}{Type I error rate (default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).}
+\item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
+
+\item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
 }
 \value{
 Partial metric invariance model in the PMI.txt file.
@@ -54,6 +57,6 @@ Full_MEI(Model.A, Example.A, Groups = "Region")
 ## End (Not run)
 
 ## ===== Compare Loadings ===== ##
-CompareLoadings(Model.A, Example.A, Groups = "Region", alpha = 0.001)
+CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
 
 }

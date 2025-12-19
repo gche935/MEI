@@ -10,7 +10,8 @@ LGCompareMeans(
   Cluster = "NULL",
   no.waves = 3,
   Bootstrap = 0,
-  alpha = 0.01
+  Type1 = 0.05,
+  Type1Adj = "PFDR"
 )
 }
 \arguments{
@@ -22,9 +23,11 @@ LGCompareMeans(
 
 \item{no.waves}{Number of waves/sources for comparisons.}
 
-\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 5,000. If not specified, the Monte Carlo simulation (default) will be used.}
+\item{Bootstrap}{Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.}
 
-\item{alpha}{Type I error rate(default is 0.01) for identifying non-invariant items in the List and Delete method. Can also use Bonferroni adjustment (Type I error /No. of comparisons).}
+\item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
+
+\item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
 }
 \value{
 Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
@@ -51,11 +54,11 @@ Model.B <- '
 '
 
 ## ===== Compare Factor Loadings ===== ##
-LGCompareLoadings(Model.B, Example.B, no.waves = 3, alpha =  0.01)
+LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
 ## End (Not run)
 
 ## ===== Compare Means ===== ##
-LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, alpha = 0.01)
+LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
 
 
 ## == Example C - Non-independent Data from two sources == ##
@@ -70,10 +73,10 @@ Model.C <- '
 '
 
 ## ===== Compare Factor Loadings ===== ##
-LGCompareLoadings(Model.C, Example.C, no.waves = 2, alpha = 0.01)
+LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
 ## End (Not run)
 
 ## ===== Compare Means ===== ##
-LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, alpha = 0.01)
+LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
 
 }

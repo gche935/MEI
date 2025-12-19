@@ -4,7 +4,13 @@
 \alias{MLCompareLoadings}
 \title{Metric Invariance Test Between Level 1 and Level 2}
 \usage{
-MLCompareLoadings(model, data.source, Cluster = "NULL", alpha = 0.05)
+MLCompareLoadings(
+  model,
+  data.source,
+  Cluster = "NULL",
+  Type1 = 0.05,
+  Type1Adj = "PFDR"
+)
 }
 \arguments{
 \item{model}{User-specified measurement model.}
@@ -13,7 +19,9 @@ MLCompareLoadings(model, data.source, Cluster = "NULL", alpha = 0.05)
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 
-\item{alpha}{Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method for multi-level models.}
+\item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
+
+\item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
 }
 \value{
 Partial metric invariance model in PMI.txt file.
@@ -32,12 +40,12 @@ Define the measurement model only once without specifying the level, and the fun
 \examples{
 
 ## == Example D - Multilevel Confirmatory Factor Analysis == ##
-# Data file is "Example.A"; cluster variable is "ID"
+# Data file is "Example.D"; cluster variable is "ID"
 
 ## Specify the measurement model - Model.D ##
 Model.D <- 'OLBI =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8'
 
 ## ===== Compare Loadings ===== ##
-MLCompareLoadings(Model.D, Example.D, Cluster = "ID", alpha = 0.05)
+MLCompareLoadings(Model.D, Example.D, Cluster = "ID", Type1 = 0.05, Type1Adj = "PFDR")
 
 }
