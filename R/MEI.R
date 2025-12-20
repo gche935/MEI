@@ -818,13 +818,13 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
       ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
       if (BMSC == "Chisquare") {
-        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+        Model.R <- which.min(MODFIT[,1])
       } else if (BMSC == "CFI") {
-        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+        Model.R <- which.max(MODFIT[,5])
       } else if (BMSC == "RMSEA") {
-        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+        Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+        Model.R <- which.min(MODFIT[,7])
       }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
@@ -1849,13 +1849,13 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       ## == Save Recommended Model (Recommend.Model) -- First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
       if (BMSC == "Chisquare") {
-        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+        Model.R <- which.min(MODFIT[,1])
       } else if (BMSC == "CFI") {
-        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+        Model.R <- which.max(MODFIT[,5])
       } else if (BMSC == "RMSEA") {
-        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+        Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+        Model.R <- which.min(MODFIT[,7])
       }
       R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
 
@@ -3279,13 +3279,19 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
       if (BMSC == "Chisquare") {
-        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+        Model.R <- which.min(MODFIT[,1])
       } else if (BMSC == "CFI") {
-        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+        Model.R <- which.max(MODFIT[,5])
       } else if (BMSC == "RMSEA") {
-        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+        Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        Model.R <- which((MODFIT[,7] + MODFIT[,8]) == min((MODFIT[,7]+MODFIT[,8])))
+        if (min(MODFIT[,7]) < .08 & min(MODFIT[,8]) > .08) { 
+          Model.R <- which.min(MODFIT[,8])
+        } else if (min(MODFIT[,7]) > .08 & min(MODFIT[,8]) < .08) { 
+          Model.R <- which.min(MODFIT[,7])
+        } else { 
+          Model.R <- which((MODFIT[,7] + MODFIT[,8]) == min((MODFIT[,7]+MODFIT[,8])))
+        }
       }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
@@ -4118,13 +4124,13 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
       ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
       if (BMSC == "Chisquare") {
-        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+        Model.R <- which.min(MODFIT[,1])
       } else if (BMSC == "CFI") {
-        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+        Model.R <- which.max(MODFIT[,5])
       } else if (BMSC == "RMSEA") {
-        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+        Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+        Model.R <- which.min(MODFIT[,7])
       }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
@@ -5300,13 +5306,13 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       ## == Save Recommended Model (Recommend.Model) -- First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
       if (BMSC == "Chisquare") {
-        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+        Model.R <- which.min(MODFIT[,1])
       } else if (BMSC == "CFI") {
-        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+        Model.R <- which.max(MODFIT[,5])
       } else if (BMSC == "RMSEA") {
-        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+        Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+        Model.R <- which.min(MODFIT[,7])
       }
       R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
