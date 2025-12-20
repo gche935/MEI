@@ -65,7 +65,7 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
                                 estimator="MLR",
                                 missing = "ML",
                                 information="observed",
-                                group.equal = c("loadings","intercepts"))
+                                group.equal = c("loadings", "intercepts"))
   } else {
     Model.config <<- lavaan::sem(model, data.source, group=Groups, cluster=Cluster,
                                 meanstructure=TRUE,
@@ -306,7 +306,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   no.group <- lavInspect(Model.config, "ngroups")  # number of groups #
   group.names <<- lavaan::lavInspect(Model.config, "group.label")  # group names
 
-  # Find out number of factors and number of items per factor #
+  # Find out the number of factors and the number of items per factor #
   names.lv <- lavaan::lavNames(model, type = "lv")  # factor name
   no.factor <- length(names.lv)  # number of factors
   names.ov <- lavaan::lavNames(model, type = "ov.ind")  # name of indicators
@@ -537,7 +537,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
       ## == Calculate Percentile Probability == ##
 
       F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-      pno_nipair <- 0  ## Set number of non-invariant pair to zero
+      pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
       comp = 0
       for (r in 1:(no.group-1)) {  ## r is the referent group
@@ -1090,7 +1090,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   no.group <- lavInspect(PMI.Model.fit, "ngroups")  # number of groups #
   group.names <<- lavaan::lavInspect(PMI.Model.fit, "group.label")  # group names
 
-  # Find out number of factors and number of items per factor #
+  # Find out the number of factors and the number of items per factor #
   names.lv <- lavaan::lavNames(model.PMI, type = "lv")  # factor name
   no.factor <- length(names.lv)  # number of factors
   names.ov <- lavaan::lavNames(model.PMI, type = "ov.ind")  # name of indicators
@@ -1107,7 +1107,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   temp <- lavaan::parameterEstimates(PMI.Model.fit, remove.nonfree=TRUE)
   simvcov <- lavInspect(PMI.Model.fit, what="vcov")
 
-  ## Extraxt factor loadings and indicator intercepts ##
+  ## Extract factor loadings and indicator intercepts ##
   ext <- c(which(temp[,"op"] == "=~" & temp[,"group"] == 1), which(temp[,"op"] == "~1" & temp[,"group"] == 1 & temp[,"lhs"] %in% names.ov))
   for (i in 2: no.group) {
     ext <- c(ext, which(temp[,"op"] == "=~" & temp[,"group"] == i), which(temp[,"op"] == "~1" & temp[,"group"] == i & temp[,"lhs"] %in% names.ov))
@@ -1477,7 +1477,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         ## == Calculate Percentile Probability == ##
 
         F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-        pno_nipair <- 0  ## Set number of non-invariant pair to zero
+        pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is the referent group
@@ -1857,7 +1857,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       } else if (BMSC == "SRMR") {
         Model.R <- which.min(MODFIT[,7])
       }
-      R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
+      R.Model <- R.Model[1] # Select the first model if 2 or more models have the same fit
 
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
 
@@ -1867,7 +1867,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
 
     if (no.items[factor.no] < 3) {   ## Begin Models with 2 items ##
-        Rec.Model <- Rec.Model[1] # Select the first model if 2 or more models have same fit
+        Rec.Model <- Rec.Model[1] # Select the first model if 2 or more models have the same fit
         PSI.marker <- which(Model.load[,1,Rec.Model] == 0)
         if (length(PSI.marker) > 1) {PSI.marker <<- PSI.marker[1]}
         PSI.FL <- matrix(1:no.k, nrow = no.group)  # factor loading matrix
@@ -2281,7 +2281,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #'  Total := Xa1*Xb1 + Xc1  # Total effect
 #' '
 #'
-#' # -- Run function CompareParmeters using  Monte Carlo simulation -- #
+#' # -- Run function CompareParameters using  Monte Carlo simulation -- #
 #' CompareParameters(PMI.Model.R, model.DP, Example.A, Groups = "Region")
 #'
 CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluster="NULL", Bootstrap=0) {
@@ -2806,7 +2806,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
   par.est <- lavaan::coef(Model.config)  # sample parameters
 
-  # Find out number of factors and number of items per factor #
+  # Find out the number of factors and the number of items per factor #
   names.lv <- lavaan::lavNames(Model.ML.X, type = "lv")  # factor name
   no.factor <- length(names.lv)/2  # number of factors
   names.ov <- lavaan::lavNames(Model.ML.X, type = "ov.ind")  # name of indicators
@@ -3005,7 +3005,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       ## == Calculate Percentile Probability == ##
 
       F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-      pno_nipair <- 0  ## Set number of non-invariant pair to zero
+      pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
       comp = 0
       for (r in 1:(no.group-1)) {  ## r is the referent group
@@ -3591,7 +3591,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   par.est <- lavaan::coef(Model.Long.config)  # sample parameters
 
-  # Find out number of factors and number of items per factor #
+  # Find out the number of factors and the number of items per factor #
   names.lv <- lavaan::lavNames(Model.Long, type = "lv")  # factor name
   no.factor <- length(names.lv)/no.waves  # number of factors
   names.ov <- lavaan::lavNames(Model.Long, type = "ov.ind")  # name of indicators
@@ -3818,7 +3818,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
       ## == Calculate Percentile Probability == ##
 
       F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-      pno_nipair <- 0  ## Set number of non-invariant pair to zero
+      pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
       comp = 0
       for (r in 1:(no.group-1)) {  ## r is the referent group
@@ -4478,7 +4478,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   par.est <- lavaan::coef(PMI.Model.fit)  # sample parameters
   group.names <<- c(paste0("Time ", 1:no.group))  # group names
 
-  # Find out number of factors and number of items per factor #
+  # Find out the number of factors and the number of items per factor #
   names.lv <- lavaan::lavNames(model.PMI, type = "lv")  # factor name
   no.factor <- length(names.lv)/no.waves  # number of factors
   names.ov <- lavaan::lavNames(model.PMI, type = "ov.ind")  # name of indicators
@@ -4508,7 +4508,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   simvcov <- lavInspect(PMI.Model.fit, what="vcov")
   par.est <- lavaan::coef(PMI.Model.fit)  # sample parameters
 
-  ## Extraxt factor loadings and indicator intercepts ##
+  ## Extract factor loadings and indicator intercepts ##
   ext <- c(which(temp$op %in% "=~" & temp$rhs %in% names.ov), which(temp$op %in% "~1" & temp$lhs %in% names.ov))
   for (j in 1:no.factor) { # loop factor.no
     if (j == 1) {
@@ -4915,7 +4915,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
         ## == Calculate Percentile Probability == ##
 
         F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-        pno_nipair <- 0  ## Set number of non-invariant pair to zero
+        pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is the referent group
@@ -5314,7 +5314,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       } else if (BMSC == "SRMR") {
         Model.R <- which.min(MODFIT[,7])
       }
-      R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
+      R.Model <- R.Model[1] # Select the first model if 2 or more models have the same fit
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
 
       Recommend.Model <- rbind(Recommend.Model, PSI.XX[R.Model])
@@ -5323,7 +5323,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
 
     if (no.items[factor.no] < 3) {   ## Begin Models with 2 items ##
-        Rec.Model <- Rec.Model[1] # Select the first model if 2 or more models have same fit
+        Rec.Model <- Rec.Model[1] # Select the first model if 2 or more models have the same fit
         PSI.marker <- which(Model.load[,1,Rec.Model] == 0)
         if (length(PSI.marker) > 1) {PSI.marker <<- PSI.marker[1]}
         PSI.FL <- matrix(1:no.k, nrow = no.group)  # factor loading matrix
