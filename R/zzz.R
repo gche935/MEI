@@ -1,3 +1,3 @@
 .onLoad <- function(libname, pkgname) {
-  packageStartupMessage("  ** Welcome to MEI Measurement Equivalence/Invariance Test (version 1.0.10) **")
+  packageStartupMessage("  ** Welcome to MEI Measurement Equivalence/Invariance Test (version 1.0.11) **")
 }

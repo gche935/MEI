@@ -65,7 +65,7 @@ model.DP <- '
  Total := Xa1*Xb1 + Xc1  # Total effect
 '
 
-# -- Run function CompareParmeters using  Monte Carlo simulation -- #
+# -- Run function CompareParameters using  Monte Carlo simulation -- #
 CompareParameters(PMI.Model.R, model.DP, Example.A, Groups = "Region")
 
 }
