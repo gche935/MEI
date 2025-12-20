@@ -210,6 +210,7 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
 #' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
@@ -231,9 +232,9 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #' ## End (Not run)
 #'
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
-CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1=0.05, Type1Adj="PFDR") {
+CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1=0.05, Type1Adj="PFDR", BMSC="SRMR") {
 
   options("width"=210)
 
@@ -247,6 +248,8 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
+  BMSC <- toupper(BMSC)
+  match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
 
   arg1_char <- deparse(substitute(model))
   arg2_char <- deparse(substitute(data.source))
@@ -801,7 +804,8 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
       ## == Print model fit indices == ##
       rownames(MODFIT) <- c(paste0("Model ", 1: length(Rec.Model)))
-#$    cat(rep("\n", 3))
+
+#$    cat(rep("\n",2), paste0("Possible Models for Factor Number ", factor.no), rep("\n",2))  
 #$    cat("####    MODEL FIT INDICES   ####", rep("\n", 2))
 #$    print(MODFIT, quote=FALSE, right=TRUE)
 
@@ -811,9 +815,17 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #$      print(round(Rec.Model.FL[,,Model.R], digits=4))
 #$    }  ## end loop Model.R
 
-      ## == First model with maximum CFI (R.Model) == ##
+      ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
-      Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      if (BMSC == "Chisquare") {
+        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+      } else if (BMSC == "CFI") {
+        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      } else if (BMSC == "RMSEA") {
+        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+      } else if (BMSC == "SRMR") {
+        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+      }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
       un.load <- sort(subset(unique(c(S.Model)), unique(c(S.Model))[] != 1))
@@ -990,6 +1002,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -999,13 +1012,13 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' Full_MEI(Model.A, Example.A, Groups = "Region")
 #'
 #' ## ===== Compare Loadings ===== ##
-#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Intercepts and Latent Means ===== ##
-#' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+#' CompareMeans(PMI.Model.R, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
-CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
+CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
   options("width"=210)
 
@@ -1019,6 +1032,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
+  BMSC <- toupper(BMSC)
+  match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
 
   arg1_char <- deparse(substitute(model.PMI))
   arg2_char <- deparse(substitute(data.source))
@@ -1831,9 +1846,17 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #$    }  ## end loop Model.R
 
 
-      ## == Save Recommended Model (Recommend.Model) -- First model with maximum CFI (R.Model) == ##
+      ## == Save Recommended Model (Recommend.Model) -- First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
-      R.Model <- which(MODFIT[,5] == max(MODFIT[,5]))
+      if (BMSC == "Chisquare") {
+        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+      } else if (BMSC == "CFI") {
+        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      } else if (BMSC == "RMSEA") {
+        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+      } else if (BMSC == "SRMR") {
+        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+      }
       R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
 
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
@@ -2688,6 +2711,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum sum of SRMR-within and SRMR-between values (default). 
 #' @return Partial metric invariance model in PMI.txt file.
 #' @export
 #' @examples
@@ -2699,9 +2723,9 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' Model.D <- 'OLBI =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8'
 #'
 #' ## ===== Compare Loadings ===== ##
-#' MLCompareLoadings(Model.D, Example.D, Cluster = "ID", Type1 = 0.05, Type1Adj = "PFDR")
+#' MLCompareLoadings(Model.D, Example.D, Cluster = "ID", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
-  MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR") {
+  MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
   options("width"=210)
 
@@ -2713,6 +2737,8 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
+  BMSC <- toupper(BMSC)
+  match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
 
   arg2_char <<- deparse(substitute(data.source))
   arg4_char <<- deparse(substitute(Cluster))
@@ -3250,9 +3276,17 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #$      print(round(Rec.Model.FL[,,Model.R], digits=4))
 #$    }  ## end loop Model.R
 
-      ## == First model with maximum CFI (R.Model) == ##
+      ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
-      Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      if (BMSC == "Chisquare") {
+        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+      } else if (BMSC == "CFI") {
+        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      } else if (BMSC == "RMSEA") {
+        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+      } else if (BMSC == "SRMR") {
+        Model.R <- which((MODFIT[,7] + MODFIT[,8]) == min((MODFIT[,7]+MODFIT[,8])))
+      }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
       un.load <- sort(subset(unique(c(S.Model)), unique(c(S.Model))[] != 1))
@@ -3401,6 +3435,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
 #' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
@@ -3415,7 +3450,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
 #'
 #' ## == Example C - Non-independent Data from two sources == ##
@@ -3429,10 +3464,10 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 #'
-LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
+LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
   options("width"=210)
 
@@ -3447,6 +3482,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
+  BMSC <- toupper(BMSC)
+  match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
 
   arg2_char <<- deparse(substitute(data.source))
   arg4_char <<- deparse(substitute(Cluster))
@@ -4078,9 +4115,17 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #$      print(round(Rec.Model.FL[,,Model.R], digits=4))
 #$    }  ## end loop Model.R
 
-      ## == First model with maximum CFI (R.Model) == ##
+      ## == First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
-      Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      if (BMSC == "Chisquare") {
+        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+      } else if (BMSC == "CFI") {
+        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      } else if (BMSC == "RMSEA") {
+        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+      } else if (BMSC == "SRMR") {
+        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+      }
       Model.R <- Model.R[1]
       S.Model <- Model.load[,,Rec.Model[Model.R]]  # Recommended Model
       un.load <- sort(subset(unique(c(S.Model)), unique(c(S.Model))[] != 1))
@@ -4311,6 +4356,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -4327,11 +4373,11 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Means ===== ##
-#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
 #'
 #' ## == Example C - Non-independent Data from two sources == ##
@@ -4346,13 +4392,13 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' '
 #'
 #' ## ===== Compare Factor Loadings ===== ##
-#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #' ## End (Not run)
 #'
 #' ## ===== Compare Means ===== ##
-#' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
+#' LGCompareMeans(PMI.Model.R, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
-LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR") {
+LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
   options("width"=210)
 
@@ -4366,6 +4412,8 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
+  BMSC <- toupper(BMSC)
+  match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
 
   arg1_char <- deparse(substitute(model.PMI))
   arg2_char <- deparse(substitute(data.source))
@@ -5249,9 +5297,17 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 #$    }  ## end loop Model.R
 
 
-      ## == Save Recommended Model (Recommend.Model) -- First model with maximum CFI (R.Model) == ##
+      ## == Save Recommended Model (Recommend.Model) -- First model with best model fit (R.Model) == ##
       class(MODFIT) <- "numeric"
-      R.Model <- which(MODFIT[,5] == max(MODFIT[,5]))
+      if (BMSC == "Chisquare") {
+        Model.R <- which(MODFIT[,1] == min(MODFIT[,1]))
+      } else if (BMSC == "CFI") {
+        Model.R <- which(MODFIT[,5] == max(MODFIT[,5]))
+      } else if (BMSC == "RMSEA") {
+        Model.R <- which(MODFIT[,4] == min(MODFIT[,4]))
+      } else if (BMSC == "SRMR") {
+        Model.R <- which(MODFIT[,7] == min(MODFIT[,7]))
+      }
       R.Model <- R.Model[1] # Select the first model if 2 or more models have same fit
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
 

@@ -11,7 +11,8 @@ LGCompareLoadings(
   no.waves = 3,
   Bootstrap = 0,
   Type1 = 0.05,
-  Type1Adj = "PFDR"
+  Type1Adj = "PFDR",
+  BMSC = "SRMR"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ LGCompareLoadings(
 \item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
 
 \item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
+
+\item{BMSC}{Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).}
 }
 \value{
 Partial metric invariance model in the PMI.txt file.
@@ -52,7 +55,7 @@ Model.B <- '
 '
 
 ## ===== Compare Factor Loadings ===== ##
-LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR")
+LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 
 ## == Example C - Non-independent Data from two sources == ##
@@ -66,6 +69,6 @@ Model.C <- '
 '
 
 ## ===== Compare Factor Loadings ===== ##
-LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR")
+LGCompareLoadings(Model.C, Example.C, no.waves = 2, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 }

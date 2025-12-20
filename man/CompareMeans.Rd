@@ -11,7 +11,8 @@ CompareMeans(
   Cluster = "NULL",
   Bootstrap = 0,
   Type1 = 0.05,
-  Type1Adj = "PFDR"
+  Type1Adj = "PFDR",
+  BMSC = "SRMR"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ CompareMeans(
 \item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
 
 \item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
+
+\item{BMSC}{Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).}
 }
 \value{
 Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
@@ -45,10 +48,10 @@ Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau
 Full_MEI(Model.A, Example.A, Groups = "Region")
 
 ## ===== Compare Loadings ===== ##
-CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 ## End (Not run)
 
 ## ===== Compare Intercepts and Latent Means ===== ##
-CompareMeans(PMI.Model.R, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+CompareMeans(PMI.Model.R, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 }

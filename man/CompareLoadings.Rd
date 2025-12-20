@@ -11,7 +11,8 @@ CompareLoadings(
   Cluster = "NULL",
   Bootstrap = 0,
   Type1 = 0.05,
-  Type1Adj = "PFDR"
+  Type1Adj = "PFDR",
+  BMSC = "SRMR"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ CompareLoadings(
 \item{Type1}{Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.}
 
 \item{Type1Adj}{Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".}
+
+\item{BMSC}{Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).}
 }
 \value{
 Partial metric invariance model in the PMI.txt file.
@@ -57,6 +60,6 @@ Full_MEI(Model.A, Example.A, Groups = "Region")
 ## End (Not run)
 
 ## ===== Compare Loadings ===== ##
-CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 }
