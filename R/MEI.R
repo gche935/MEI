@@ -1830,8 +1830,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #@        } else {
 #@          Rec.Model.TX[G, , Model.R] <- temp.tx[(sum(no.items[1:(factor.no-1)])+1):(sum(no.items[1:(factor.no-1)])+no.items[factor.no])]
 #@        }
-        }  ## end loop G
-      } ## end loop Model.R
+        }  ## end (for G)
+      } ## end (for Model.R)
 
       ## == Print model fit indices == ##
       rownames(MODFIT) <- c(paste0("Model ", 1: length(Rec.Model)))
@@ -1843,7 +1843,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #$    for (Model.R in 1: length(Rec.Model)) {
 #$      cat(rep("\n", 2), "Factor Loadings of Model", Model.R, rep("\n", 2))
 #$      print(round(Rec.Model.FL[,,Model.R], digits=4))
-#$    }  ## end loop Model.R
+#$    }  ## end (for Model.R)
 
 
       ## == Save Recommended Model (Recommend.Model) -- First model with best model fit (R.Model) == ##
@@ -1857,8 +1857,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       } else if (BMSC == "SRMR") {
         Model.R <- which.min(MODFIT[,7])
       }
-      R.Model <- R.Model[1] # Select the first model if 2 or more models have the same fit
-
+      R.Model <- Model.R[1] # Select the first model if 2 or more models have the same fit
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
 
       Recommend.Model <- rbind(Recommend.Model, PSI.XX[R.Model])
@@ -5314,7 +5313,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       } else if (BMSC == "SRMR") {
         Model.R <- which.min(MODFIT[,7])
       }
-      R.Model <- R.Model[1] # Select the first model if 2 or more models have the same fit
+      R.Model <- Model.R[1] # Select the first model if 2 or more models have the same fit
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}  ## Reset Recommend.Model
 
       Recommend.Model <- rbind(Recommend.Model, PSI.XX[R.Model])
