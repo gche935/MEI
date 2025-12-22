@@ -210,7 +210,7 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL") {
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
-#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).
 #' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
@@ -805,7 +805,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
       ## == Print model fit indices == ##
       rownames(MODFIT) <- c(paste0("Model ", 1: length(Rec.Model)))
 
-#$    cat(rep("\n",2), paste0("Possible Models for Factor Number ", factor.no), rep("\n",2))  
+#$    cat(rep("\n",2), paste0("Possible Models for Factor Number ", factor.no), rep("\n",2))
 #$    cat("####    MODEL FIT INDICES   ####", rep("\n", 2))
 #$    print(MODFIT, quote=FALSE, right=TRUE)
 
@@ -1002,7 +1002,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
-#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -2710,7 +2710,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
-#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum sum of SRMR-within and SRMR-between values (default). 
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum sum of SRMR-within and SRMR-between values (default).
 #' @return Partial metric invariance model in PMI.txt file.
 #' @export
 #' @examples
@@ -3284,11 +3284,11 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
       } else if (BMSC == "RMSEA") {
         Model.R <- which.min(MODFIT[,4])
       } else if (BMSC == "SRMR") {
-        if (min(MODFIT[,7]) < .08 & min(MODFIT[,8]) > .08) { 
+        if (min(MODFIT[,7]) < .08 & min(MODFIT[,8]) > .08) {
           Model.R <- which.min(MODFIT[,8])
-        } else if (min(MODFIT[,7]) > .08 & min(MODFIT[,8]) < .08) { 
+        } else if (min(MODFIT[,7]) > .08 & min(MODFIT[,8]) < .08) {
           Model.R <- which.min(MODFIT[,7])
-        } else { 
+        } else {
           Model.R <- which((MODFIT[,7] + MODFIT[,8]) == min((MODFIT[,7]+MODFIT[,8])))
         }
       }
@@ -3440,7 +3440,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
-#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).
 #' @return Partial metric invariance model in the PMI.txt file.
 #' @export
 #' @examples
@@ -3458,7 +3458,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
 #'
-#' ## == Example C - Non-independent Data from two sources == ##
+#' ## == Example C - Non-independent Data from Two Sources == ##
 #'
 #' # Data file is "Example.C"
 #'
@@ -4361,7 +4361,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 10,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all waves), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
-#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default). 
+#' @param BMSC Best Model Selection Criterion used to select among models with the same number of estimated parameters. "ChiSquare" = minimum Chi-Square value, "CFI" = maximum CFI value, "RMSEA" = minimum RMSEA value, and "SRMR" = minimum SRMR value (default).
 #' @return Partial scalar invariance model in PSI.txt file and results of latent means comparisons.
 #' @export
 #' @examples
@@ -4385,7 +4385,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #' LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 #'
 #'
-#' ## == Example C - Non-independent Data from two sources == ##
+#' ## == Example C - Non-independent Data from Two Sources == ##
 #'
 #' # Data file is "Example.C"
 #'
@@ -5495,7 +5495,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   }
 
   print(summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
-  
+
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 9)
   colnames(DMODFIT) <-

@@ -64,7 +64,7 @@ LGCompareLoadings(Model.B, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PF
 LGCompareMeans(PMI.Model.R, Example.B, no.waves = 3, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR")
 
 
-## == Example C - Non-independent Data from two sources == ##
+## == Example C - Non-independent Data from Two Sources == ##
 
 # Data file is "Example.C"
 

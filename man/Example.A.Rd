@@ -9,7 +9,7 @@ A data frame with 2800 rows and 17 variables:
 \describe{
   \item{ID}{Numeric, case ID number.}
   \item{Region}{Character, Grouping variable for Groups: European region ("North West", "Nordic", "Continental", "Southern", "Central East", "North East" and "South East").}
-  \item{Org Size}{Numeric, control variable - organization size.}
+  \item{OrgSize}{Numeric, control variable - organization size.}
   \item{Tenure}{Numeric, control variable - tenure in years.}
   \item{R45a}{Numeric, Reverse-coded work-life conflict item 45a: from 1 (never) to 5 (always).}
   \item{R45b}{Numeric, Reverse-coded work-life conflict item 45b: from 1 (never) to 5 (always).}
