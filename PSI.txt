@@ -1,0 +1,60 @@
+## =====  Recommended Model  ===== ##
+PSI.Model.R <- ' 
+ 
+  External_G1 =~ F1L1*x1_G1 + 1*x2_G1 + F1L2*x3_G1 + F1L3*x4_G1 + F1L4*x5_G1 + F1L5*x6_G1
+  External_G2 =~ F1L1*x1_G2 + 1*x2_G2 + F1L2*x3_G2 + F1L3*x4_G2 + F1L4*x5_G2 + F1L5*x6_G2
+
+  x1_G1 ~~ x1_G2
+  x2_G1 ~~ x2_G2
+  x3_G1 ~~ x3_G2
+  x4_G1 ~~ x4_G2
+  x5_G1 ~~ x5_G2
+  x6_G1 ~~ x6_G2
+
+  x1_G1 ~ F1I9*1
+  x2_G1 ~ 0*1
+  x3_G1 ~ F1I11*1
+  x4_G1 ~ F1I13*1
+  x5_G1 ~ F1I14*1
+  x6_G1 ~ F1I15*1
+  x1_G2 ~ F1I10*1
+  x2_G2 ~ 0*1
+  x3_G2 ~ F1I12*1
+  x4_G2 ~ F1I13*1
+  x5_G2 ~ F1I14*1
+  x6_G2 ~ F1I16*1 
+ 
+  Internal_G1 =~ F2L1*x7_G1 + 1*x8_G1 + F2L2*x9_G1 + F2L3*x10_G1
+  Internal_G2 =~ F2L1*x7_G2 + 1*x8_G2 + F2L2*x9_G2 + F2L3*x10_G2
+
+  x7_G1 ~~ x7_G2
+  x8_G1 ~~ x8_G2
+  x9_G1 ~~ x9_G2
+  x10_G1 ~~ x10_G2
+
+  x7_G1 ~ F2I55*1
+  x8_G1 ~ 0*1
+  x9_G1 ~ F2I57*1
+  x10_G1 ~ F2I58*1
+  x7_G2 ~ F2I56*1
+  x8_G2 ~ 0*1
+  x9_G2 ~ F2I57*1
+  x10_G2 ~ F2I58*1 
+  '
+
+ 
+ ## Run PSI.Model.R
+ 
+   PSI.Model.fit <- lavaan::sem(PSI.Model.R,
+     Example.C,
+     missing = 'fiml',
+     auto.fix.first = FALSE,
+     marker.int.zero = TRUE,
+     meanstructure = T,
+     information = 'observed',
+     estimator = 'MLR')
+ 
+ 
+ ## Request summary outputs
+ 
+   print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T)) 

@@ -1,0 +1,40 @@
+## =====  Recommended Model  ===== ##
+PMI.Model.R <- ' 
+    External_G1 =~ 1*x1_G1 + F1L1*x2_G1 + F1L2*x3_G1 + F1L3*x4_G1 + F1L4*x5_G1 + F1L5*x6_G1
+    External_G2 =~ 1*x1_G2 + F1L1*x2_G2 + F1L2*x3_G2 + F1L3*x4_G2 + F1L4*x5_G2 + F1L5*x6_G2
+ 
+   x1_G1 ~~ x1_G2
+   x2_G1 ~~ x2_G2
+   x3_G1 ~~ x3_G2
+   x4_G1 ~~ x4_G2
+   x5_G1 ~~ x5_G2
+   x6_G1 ~~ x6_G2
+ 
+    Internal_G1 =~ 1*x7_G1 + F2L1*x8_G1 + F2L2*x9_G1 + F2L3*x10_G1
+    Internal_G2 =~ 1*x7_G2 + F2L1*x8_G2 + F2L2*x9_G2 + F2L3*x10_G2
+ 
+   x7_G1 ~~x7_G2
+   x8_G1 ~~x8_G2
+   x9_G1 ~~x9_G2
+   x10_G1 ~~x10_G2
+ 
+   ' 
+
+ 
+ ## Run PMI.Model.R
+ 
+   PMI.Model.fit <- lavaan::sem(PMI.Model.R,
+     Example.C,
+     missing = 'fiml',
+     auto.fix.first = FALSE,
+     information = 'observed',
+     estimator = 'MLR')
+ 
+ 
+ ## Request summary outputs
+ 
+ 
+   print('## ===== Final Model -- PMI.Model.R ===== ##')
+
+ 
+   print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T)) 
