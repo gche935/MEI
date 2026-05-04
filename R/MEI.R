@@ -2283,410 +2283,463 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
 
 
-##### Hide CompareParameters #####
-#CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluster="NULL", Bootstrap=0) {
-#
-#  model.PMI <- PMI.Model.R
-#  model.PATH <- model.DP
-#  Bootstrap = 2000 # Number of bootstrap samples
-#  data.source = Example.A
-#  Groups = "country"
-#  Cluster="NULL"
-#
-#  model.SEM <- rbind(model.PMI, model.PATH)
-#
-#  arg1_char <- deparse(substitute(model.SEM))
-#  arg2_char <- deparse(substitute(data.source))
-#  arg3_char <- deparse(substitute(Groups))
-#
-#  ## Check for bootstrap sample number (Bootstrap) ##
-#  if (Bootstrap !=0) {
-#    b.no.integer <- Bootstrap == round(Bootstrap)
-#    if (b.no.integer == "FALSE") stop("Bootstrap sample number must be an integer")
-#    if (Bootstrap > 10000) stop("Bootstrap sample number greater than 10,000 is not recommended")
-#    if (Bootstrap < 500) stop("Bootstrap sample number smaller than 500 is not recommended")
-#    TYPE = "Bootstrap"
-#    b.no <- Bootstrap
-#  } else {
-#    TYPE = "MonteCarlo"
-#  }
-#
-#  count.tx <- 0
-#
-#
-#  ## ========== Run model.SEM ========== ##
-#  if (Cluster == "NULL") {
-#    SEM.Model.fit <- suppressWarnings(lavaan::sem(model.SEM,
-#      data.source,
-#      group = Groups,
-#      missing = 'fiml',
-##     auto.fix.first = FALSE,
-##     marker.int.zero = TRUE,
-##     meanstructure = T,
-#     information = 'observed',
-#     estimator = 'MLR'))
-#  } else {
-#    SEM.Model.fit <- suppressWarnings(lavaan::sem(model.SEM,
-#      data.source,
-#      group = Groups,
-#      missing = 'fiml',
-##     auto.fix.first = FALSE,
-##     marker.int.zero = TRUE,
-##     meanstructure = T,
-#     information = 'observed',
-#      cluster=Cluster,
-#      estimator = 'MLR'))
-#   }  # end Cluster
-#
-#  ## Request summary outputs
-#  #$  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
-#
-#  ## ===== End (Run model.SEM) ===== ##
-#
-#  no.group <- lavInspect(SEM.Model.fit, "ngroups")  # Number of groups #
-#  group.names <<- lavInspect(SEM.Model.fit, "group.label")
-#
-#
-#  ## ========= Create New Model with Defined Parameters for Each Group ======== ##
-#
-#  est <- parameterEstimates(SEM.Model.fit)
-#  est <- est[est[, "op"] == "~",]  ## Subset of Data
-#  par.label <- unique(est[, "label"])
-#  #$ length(par.label)
-#
-#  DP <- parameterEstimates(SEM.Model.fit)
-#  DP <- DP[DP[, "op"] == ":=",]  ## Subset of Data
-#  DP.name <- DP[, "lhs"]
-#  no.DP <- length(DP.name) # Number of defined parameters
-#
-#  sc <- capture.output(cat(model.SEM)) # Change model to vector with row numbers
-#  LDP <- grep(":=", sc) # Rows with Defined Parameters
-#  ODP <- sc[LDP] # Extract the Defined Parameters
-#
-#  Model.wo.DP <- sc # Model without defined parameters
-#  Model.wo.DP <- Model.wo.DP[-c(LDP)]
-#  #$ cat(Model.wo.DP)
-#
-#  for (m in 1: length(par.label)) {
-#    A <- par.label[m]
-#    B <- ""
-#    for (n in 1: no.group) {
-#      if (n == 1) {
-#        B <- paste0(B, "c(GP", n, A,",")
-#      } else if (n == no.group) {
-#        B <- paste0(B, "GP", n, A,")")
-#      } else {
-#        B <- paste0(B, "GP", n, A, ",")
-#      }
-#    }
-#    Model.wo.DP <- gsub(A, B, Model.wo.DP)
-#  }
-#  for (i in 1:length(Model.wo.DP)) { Model.wo.DP[i] <- paste0(Model.wo.DP[i], " \n") }
-#  #$ cat(Model.wo.DP)
-#
-#  sc <- capture.output(cat(model.SEM))
-#  LDP <- grep(":=", sc)
-#  ODP <- sc[LDP]
-#  NDP <- ODP
-#  for (n in 1: (no.group-1)) {NDP <- rbind(NDP, ODP)}
-#
-#  for (n in 1: no.group) {
-#    for (m in 1: length(par.label)) {
-#      A <- par.label[m]
-#      B <- ""
-#      B <- paste0(B, "GP", n, A)
-#      NDP[n,] <- gsub(A, B, NDP[n,])
-#    } # end loop m
-#    for (p in 1:length(DP.name)) {
-#      A <- DP.name[p]
-#      B <- ""
-#      B <- paste0(B, "GP", n, A)
-#      NDP[n,] <- gsub(A, B, NDP[n,])
-#    } # end loop p
-#  } # end loop n
-#
-#  k <- length(Model.wo.DP)
-#  for (i in 1:no.group) {
-#    for (j in 1:length(LDP)) {
-#      Model.wo.DP[k+1] <- paste0(NDP[i,j], "\n")
-#      k <- k + 1
-#    } # end loop j
-#  } # end loop i
-#
-#  Model.DP.1 <- paste0("Model.DP <- ' \n")  # Model.DP is the revised Model
-#  for (i in 1:length(Model.wo.DP)) {Model.DP.1 <- paste0(Model.DP.1, Model.wo.DP[i])}
-#  Model.DP.1 <- paste0(Model.DP.1, "'", "\n")
-#
-#  eval(parse(text = Model.DP.1))
-#  model.SEM <- Model.DP
-#
-#  ## ================ ##
-#
-#  ## ========== Run model.SEM ========== ##
-#  if (Cluster == "NULL") {
-#    SEM.Model.fit <- lavaan::sem(model.SEM,
-#      data.source,
-#      group = Groups,
-#      missing = 'fiml',
-#      auto.fix.first = FALSE,
-##     marker.int.zero = TRUE,
-##     meanstructure = T,
-#     information = 'observed',
-#     estimator = 'MLR')
-#  } else {
-#    SEM.Model.fit <- lavaan::sem(model.SEM,
-#      data.source,
-#      group = Groups,
-#      missing = 'fiml',
-#      auto.fix.first = FALSE,
-##     marker.int.zero = TRUE,
-##     meanstructure = T,
-#      information = 'observed',
-#      cluster=Cluster,
-#      estimator = 'MLR')
-#   }  # end Cluster
-#
-#
-#  ## Request summary outputs
-#  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
-#
-#  SEM.Model.fit <<- SEM.Model.fit # Save SEM.Model.fit to Global Environment
-#
-#  ## ===== End (Run model.SEM) ===== ##
-#
-#  ## ========== Compare Parameters ========== ##
-#
-#  no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for defined parameter
-#  par.est <- lavaan::coef(SEM.Model.fit)  # sample parameters
-#  simvcov <- lavInspect(SEM.Model.fit, what="vcov")
-#
-#  if (TYPE == "MonteCarlo") {
-#
-#    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
-#    bootcoef <- mcmc
-#    bootno <- nrow(mcmc)  # No. of successful simulated samples
-#    cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
-#
-#  } else { # TYPE=Bootstrap
-#
-#  ## == Simplified bootstrapping model == ##
-#  SEM.boot <- lavaan::sem(model.SEM, data = data.source, group=Groups,
-##               meanstructure = TRUE,
-#               auto.fix.first = FALSE,
-##               marker.int.zero = TRUE,
-#               ordered = FALSE,
-#               missing = "fiml", se = "none", test="none", check.start = FALSE, check.post = FALSE, check.gradient = FALSE)
-#
-#  ## == Bootstrapping == ##
-#  bootcoef <- lavaan::bootstrapLavaan(SEM.boot, R = b.no, ncpus = max(1L, parallel::detectCores() - 1L), parallel="snow")
-#  bootno <- nrow(bootcoef)  # number of successful bootstrap samples
-#
-#  # Remove error and nonadmissible bootstrap samples #
-#  B.na <- attr(bootcoef,"nonadmissible")
-#  B.er <- attr(bootcoef,"error.idx")
-#  B.de <- c(B.na,B.er)
-#  if (length(B.de) != 0) {
-#    B.re <- bootcoef[-c(B.de),]
-#    bootcoef <- B.re
-#  }
-#  bootno <- nrow(bootcoef)  # number of successful bootstrap samples
-#
-#  ## Print Number of Successful Bootstrap Samples ##
-#
-#  cat("\n")
-#  cat(paste0(" ===== Number of requested bootstrap samples, ", b.no, " ==== "))
-#  cat("\n")
-#  cat(paste0(" ===== Number of successful bootstrap samples, ", bootno, " ==== "))
-#  cat("\n")
-#
-#  } ## end MonteCarlo or Bootstrap
-#
-#
-#
-#  ## === Calculate Estimated (dfE) and Bootstrapped (dfB) Defined Parameters === ##
-#
-#  sc <- capture.output(cat(model.SEM))
-#  LDP <- grep(":=", sc)
-#  ODP <- sc[LDP]
-#  NDP <- ODP  # New defined parameters
-#  BDP <- ODP  # For calculation of bootstrapped defined parameters
-#  EDP <- ODP  # For calculation of estimated defined parameters
-#
-#  df1 <- "dfE <- data.frame("  # data.frame for estimated parameters
-#  df2 <- "dfB <- data.frame("  # data.frame for bootstrapped parameters
-#  for (n in 1: no.group) {
-#    for (m in 1: length(par.label)) {
-#      if (n == 1 & m == 1) {
-#        df1 <- paste0(df1, "par.est['GP", n, par.label[m],"']")
-#        df2 <- paste0(df2, "bootcoef[,'GP", n, par.label[m],"']")
-#      } else {
-#        df1 <- paste0(df1, ",", "par.est['GP", n, par.label[m],"']")
-#        df2 <- paste0(df2, ",", "bootcoef[,'GP", n, par.label[m],"']")
-#      }
-#    }
-#  }
-#  df1 <- paste0(df1,")")
-#  df2 <- paste0(df2,")")
-#
-#  eval(parse(text = df1))
-#  eval(parse(text = df2))
-#
-#  # Rename columns in dfE #
-#  k <- 1
-#  for (n in 1: no.group) {
-#    for (m in 1: length(par.label)) {
-#      names(dfE)[k] <- paste0("GP", n, par.label[m])
-#      colnames(dfB)[k] <- paste0("GP", n, par.label[m])
-#      k <- k + 1
-#    } # end loop m
-#  } # end loop n
-#
-#  k <- 1
-#  for (n in 1: no.group) {
-#    for (p in 1:length(DP.name)) {
-#      for (m in 1: length(par.label)) {
-#        A <- paste0("GP", n, par.label[m])
-#        E <- paste0("dfE['",A,"']")
-#        B <- paste0("dfB['",A,"']")
-#        EDP[k] <- gsub(A, E, EDP[k])
-#        BDP[k] <- gsub(A, B, BDP[k])
-#      } # end loop m
-#      A <- paste0("GP",n,DP.name[p])
-#      E <- paste0("dfE['",A,"']")
-#      B <- paste0("dfB['",A,"']")
-#      EDP[k] <- gsub(A, E, EDP[k])
-#      BDP[k] <- gsub(A, B, BDP[k])
-#      EDP[k] <- gsub(":=", "<-", EDP[k])
-#      BDP[k] <- gsub(":=", "<-", BDP[k])
-#      k <- k + 1
-#    } # end loop p
-#  } # end loop n
-#
-#  # Calculate Defined Parameters #
-#  for (n in 1: (length(DP.name)*no.group)) {
-#    eval(parse(text = EDP[n])) # Estimated
-#    eval(parse(text = BDP[n])) # Bootstrapped
-#  } # end loop n
-#
-#
-#  ## === Finish Calculation === ##
-#
-#
-#  Final.DP <- matrix(0, length(DP.name), no.group) # Create sample defined parameter matrix
-#  LL99.DP <- matrix(0, length(DP.name), no.group) # Create 99% CI Lower Limit
-#  LL95.DP <- matrix(0, length(DP.name), no.group) # Create 95% CI Lower Limit
-#  LL90.DP <- matrix(0, length(DP.name), no.group) # Create 90% CI Lower Limit
-#  UL99.DP <- matrix(0, length(DP.name), no.group) # Create 99% CI Upper Limit
-#  UL95.DP <- matrix(0, length(DP.name), no.group) # Create 95% CI Upper Limit
-#  UL90.DP <- matrix(0, length(DP.name), no.group) # Create 90% CI Upper Limit
-#
-#  colnames(Final.DP) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
-#  rownames(Final.DP) <- paste0(" Defined Parameter ", DP.name, "   ")
-#  for (i in 1: no.group) {
-#    for (j in 1: length(DP.name)) {
-#      Final.DP[j,i] <- as.numeric(dfE[no.group*length(par.label)+(i-1)*length(DP.name)+j])
-#      LL99.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.005), na.rm = TRUE), digits=4)
-#      LL95.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.025), na.rm = TRUE), digits=4)
-#      LL90.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.05), na.rm = TRUE), digits=4)
-#      UL90.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.95), na.rm = TRUE), digits=4)
-#      UL95.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.975), na.rm = TRUE), digits=4)
-#      UL99.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.995), na.rm = TRUE), digits=4)
-#    } # end loop j
-#  } # end loop i
-#
-#  ## == Start the DP.no loop for CompareParameters == ##
-#  for (DP.no in 1: no.DP) {
-#
-#    boot.dif.DP <- matrix(0, bootno, no.dif)  # Create bootstrap difference matrix
-#    samp.dif.DP <- matrix(0, no.group, no.group) # Create sample difference matrix
-#
-#    ## == Calculate bootstrap difference and sample estimate difference == ##
-#    comp = 0
-#    for (r in 1:(no.group-1)) {  ## r is referent group
-#      for (a in (r+1):no.group) {  ## a is argument group
-#        kr.DP <<- no.group*length(par.label)+(r-1)*length(DP.name)  ## location of DP before r group
-#        ka.DP <<- no.group*length(par.label)+(a-1)*length(DP.name)  ## location of DP before a group
-#        comp = comp + 1
-#        boot.dif.DP[,comp] <- dfB[,(kr.DP+DP.no)] - dfB[,(ka.DP+DP.no)]
-#        samp.dif.DP[r,a] <- as.numeric(dfE[kr.DP+DP.no] - dfE[ka.DP+DP.no])
-#      }  ## end loop a
-#    }  ## end loop r
-#
-#
-#        ## == Calculate Percentile Probability == ##
-#
-#    DP.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
-#    colnames(DP.comp.pp) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
-#    rownames(DP.comp.pp) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
-#
-#    comp = 0
-#    for (r in 1:(no.group-1)) {  ## r is the referent group
-#      for (a in (r+1):no.group) {  ## a is the argument
-#        comp = comp + 1
-#        if (quantile(boot.dif.DP[, comp], probs = 0.5, na.rm = TRUE) > 0) {
-#          DP.comp.pp[r,a] = 2*(sum(boot.dif.DP[, comp] < 0, na.rm = TRUE)/bootno)
-#          DP.comp.pp[a,r] = 2*(sum(boot.dif.DP[, comp] < 0, na.rm = TRUE)/bootno)
-#        } else {
-#          DP.comp.pp[r,a] = 2*(sum(boot.dif.DP[, comp] > 0, na.rm = TRUE)/bootno)
-#          DP.comp.pp[a,r] = 2*(sum(boot.dif.DP[, comp] > 0, na.rm = TRUE)/bootno)
-#        }  ## end if
-#      }  ## end loop a
-#    }  ## end loop r
-#
-#    ## == Percentile Confidence Intervals of Pairwise Comparisons == ##
-#
-#    no.k <- no.dif*10
-#    PCI <- matrix(1:no.k, nrow = no.dif)
-#    colnames(PCI) <- c("Group 1","Group 2","0.5%","2.5%","5%","Estimate","95%","97.5%","99.5%","p-value")
-#
-#    comp = 0
-#    for (r in 1:(no.group-1)) {
-#      for (a in (r+1):no.group) {
-#        comp = comp + 1
-#        PCI[comp, 1] <- r
-#        PCI[comp, 2] <- a
-#        PCI[comp, 3] <- round(quantile(boot.dif.DP[, comp],c(0.005), na.rm = TRUE), digits=4)
-#        PCI[comp, 4] <- round(quantile(boot.dif.DP[, comp],c(0.025), na.rm = TRUE), digits=4)
-#        PCI[comp, 5] <- round(quantile(boot.dif.DP[, comp],c(0.05), na.rm = TRUE), digits=4)
-#        PCI[comp, 6] <- round(samp.dif.DP[r,a], digits=4)
-#        PCI[comp, 7] <- round(quantile(boot.dif.DP[, comp],c(0.95), na.rm = TRUE), digits=4)
-#        PCI[comp, 8] <- round(quantile(boot.dif.DP[, comp],c(0.975), na.rm = TRUE), digits=4)
-#        PCI[comp, 9] <- round(quantile(boot.dif.DP[, comp],c(0.995), na.rm = TRUE), digits=4)
-#        PCI[comp,10] <- round(DP.comp.pp[r,a], digits=4)
-#      }  ## end loop a
-#    }  ## end loop r
-#
-#    #$    cat("\n")
-#    #$      print(PCI[],quote=F, nsmall=4, scientific=FALSE)
-#
-#    ## Print Defined Parameters ##
-#    P.DP <- matrix(0, 7, no.group)
-#    colnames(P.DP) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
-#    rownames(P.DP) <- c("Estimated Defined Parameter", "Lower Limit 99% CI", "Lower Limit 95% CI", "Lower Limit 90% CI",
-#                        "Upper Limit 90% CI", "Upper Limit 95% CI", "Upper Limit 99% CI")
-#    P.DP[1,] <- Final.DP[DP.no,]
-#    P.DP[2,] <- LL99.DP[DP.no,]
-#    P.DP[3,] <- LL95.DP[DP.no,]
-#    P.DP[4,] <- LL90.DP[DP.no,]
-#    P.DP[5,] <- UL90.DP[DP.no,]
-#    P.DP[6,] <- UL95.DP[DP.no,]
-#    P.DP[7,] <- UL99.DP[DP.no,]
-#
-#    cat("\n")
-#    cat("## ===== Defined Parameter: ", DP.name[DP.no], " ===== ##")
-#    cat("\n")
-#    print(P.DP, quote=F, row.names=TRUE, digits=4, nsmall=4, scientific=FALSE)
-#    cat("\n")
-#    cat("== p-values for pairwise comparisons ==")
-#    cat("\n")
-#    print(formatC(DP.comp.pp, digits=4, format="f"), quote=F)
-#    cat("\n")
-#
-#  } # end loop DP.no
-#
-#} ## End (Function CompareParameters)
-#
-## ==================== Finish Function "CompareParameters" ==================== #
+# ==================== Create Function "CompareParameters" ==================== #
+#' Compare Defined Parameters Across Groups
+#'
+#' Conduct defined parameters across groups, e.g., direct, indirect and total effects.
+#'
+#' Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific mediation effects in complex latent variable models. Organizational Research Methods, 15, 3-16.
+#'
+#'
+#' @param model.PMI Partial metric invariance model (PMI.Model.R from CompareLoadings() or user-specified).
+#' @param model.PATH model with defined parameters.
+#' @param data.source A data frame containing the observed variables used in the model.
+#' @param Groups Grouping variable for cross-group comparisons.
+#' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
+#' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
+#'
+#' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
+#' @export
+#' @examples
+#'
+#'
+#' ## Specify the measurement model - Model.A
+#' Model.A <- '
+#'        WorkLifeConflict =~ R45a + R45b + R45c + R45d + R45e
+#'        Engagement =~ R90a + R90b + R90c
+#'        Wellbeing =~ R87a + R87b + R87c + R87d + R87e
+#' '
+#'
+#' ## Not run:
+#' ## ===== Full Measurement Invariance Test ===== ##
+#' Full_MEI(Model.A, Example.A, Groups = "Region")
+#'
+#' ## ===== Compare Loadings ===== ##
+#' CompareLoadings(Model.A, Example.A, Groups = "Region", Type1 = 0.05, Type1Adj = "PFDR")
+#' ## End (Not run)
+#'
+#' ## ===== Compare Parameters ===== ##
+#' # -- Specify Path model - model.PATH (model.DP) [OrgSize and Tenure are control variables] -- #
+#' model.DP <- '
+#'   Wellbeing ~ Xb1*Engagement + Xc1*WorkLifeConflict + Xd1*OrgSize + Xe1*Tenure
+#'   Engagement ~ Xa1*WorkLifeConflict
+#'
+#'  # Defined Parameters #
+#'  IndirectP := Xa1*Xb1  # Indirect effect
+#'  DirectP := Xc1  # Direct effect
+#'  Total := Xa1*Xb1 + Xc1  # Total effect
+#' '
+#'
+#' # -- Run function CompareParameters using  Monte Carlo simulation -- #
+#' CompareParameters(PMI.Model.R, model.DP, Example.A, Groups = "Region")
+#'
+CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluster="NULL", Bootstrap=0) {
+
+  options("width"=210)
+
+  #  model.PMI <- PMI.Model.R
+  #  model.PATH <- model.DP
+  #  Bootstrap = 2000 # Number of bootstrap samples
+  #  data.source = Example.A
+  #  Groups = "country"
+  #  Cluster="NULL"
+
+  model.SEM <- rbind(model.PMI, model.PATH)
+
+  arg1_char <- deparse(substitute(model.SEM))
+  arg2_char <- deparse(substitute(data.source))
+  arg3_char <- deparse(substitute(Groups))
+
+  ## Check for bootstrap sample number (Bootstrap) ##
+  if (Bootstrap !=0) {
+    b.no.integer <- Bootstrap == round(Bootstrap)
+    if (b.no.integer == "FALSE") stop("Bootstrap sample number must be an integer")
+    if (Bootstrap > 10000) stop("Bootstrap sample number greater than 10,000 is not recommended")
+    if (Bootstrap < 500) stop("Bootstrap sample number smaller than 500 is not recommended")
+    TYPE = "Bootstrap"
+    b.no <- Bootstrap
+  } else {
+    TYPE = "MonteCarlo"
+  }
+
+  count.tx <- 0
+
+
+  ## ========== Run model.SEM ========== ##
+  if (Cluster == "NULL") {
+    SEM.Model.fit <- suppressWarnings(lavaan::sem(model.SEM,
+                                                  data.source,
+                                                  group = Groups,
+                                                  missing = 'fiml',
+                                                  #     auto.fix.first = FALSE,
+                                                  #     marker.int.zero = TRUE,
+                                                  #     meanstructure = T,
+                                                  information = 'observed',
+                                                  estimator = 'MLR'))
+  } else {
+    SEM.Model.fit <- suppressWarnings(lavaan::sem(model.SEM,
+                                                  data.source,
+                                                  group = Groups,
+                                                  missing = 'fiml',
+                                                  #     auto.fix.first = FALSE,
+                                                  #     marker.int.zero = TRUE,
+                                                  #     meanstructure = T,
+                                                  information = 'observed',
+                                                  cluster=Cluster,
+                                                  estimator = 'MLR'))
+  }  # end Cluster
+
+  ## Request summary outputs
+  #$  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  ## ===== End (Run model.SEM) ===== ##
+
+  no.group <- lavInspect(SEM.Model.fit, "ngroups")  # Number of groups #
+  group.names <<- lavInspect(SEM.Model.fit, "group.label")
+
+
+  ## ========= Create New Model with Defined Parameters for Each Group ======== ##
+
+  est <- parameterEstimates(SEM.Model.fit)
+  est <- est[est[, "op"] == "~",]  ## Subset of Data
+  par.label <- unique(est[, "label"])
+  #$ length(par.label)
+
+  DP <- parameterEstimates(SEM.Model.fit)
+  DP <- DP[DP[, "op"] == ":=",]  ## Subset of Data
+  DP.name <- DP[, "lhs"]
+  no.DP <- length(DP.name) # Number of defined parameters
+
+  sc <- capture.output(cat(model.SEM)) # Change model to vector with row numbers
+  LDP <- grep(":=", sc) # Rows with Defined Parameters
+  ODP <- sc[LDP] # Extract the Defined Parameters
+
+  Model.wo.DP <- sc # Model without defined parameters
+  Model.wo.DP <- Model.wo.DP[-c(LDP)]
+  #$ cat(Model.wo.DP)
+
+  for (m in 1: length(par.label)) {
+    A <- par.label[m]
+    B <- ""
+    for (n in 1: no.group) {
+      if (n == 1) {
+        B <- paste0(B, "c(GP", n, A,",")
+      } else if (n == no.group) {
+        B <- paste0(B, "GP", n, A,")")
+      } else {
+        B <- paste0(B, "GP", n, A, ",")
+      }
+    }
+    Model.wo.DP <- gsub(A, B, Model.wo.DP)
+  }
+  for (i in 1:length(Model.wo.DP)) { Model.wo.DP[i] <- paste0(Model.wo.DP[i], " \n") }
+  #$ cat(Model.wo.DP)
+
+  sc <- capture.output(cat(model.SEM))
+  LDP <- grep(":=", sc)
+  ODP <- sc[LDP]
+  NDP <- ODP
+  for (n in 1: (no.group-1)) {NDP <- rbind(NDP, ODP)}
+
+  for (n in 1: no.group) {
+    for (m in 1: length(par.label)) {
+      A <- par.label[m]
+      B <- ""
+      B <- paste0(B, "GP", n, A)
+      NDP[n,] <- gsub(A, B, NDP[n,])
+    } # end loop m
+    for (p in 1:length(DP.name)) {
+      A <- DP.name[p]
+      B <- ""
+      B <- paste0(B, "GP", n, A)
+      NDP[n,] <- gsub(A, B, NDP[n,])
+    } # end loop p
+  } # end loop n
+
+  k <- length(Model.wo.DP)
+  for (i in 1:no.group) {
+    for (j in 1:length(LDP)) {
+      Model.wo.DP[k+1] <- paste0(NDP[i,j], "\n")
+      k <- k + 1
+    } # end loop j
+  } # end loop i
+
+  Model.DP.1 <- paste0("Model.DP <- ' \n")  # Model.DP is the revised Model
+  for (i in 1:length(Model.wo.DP)) {Model.DP.1 <- paste0(Model.DP.1, Model.wo.DP[i])}
+  Model.DP.1 <- paste0(Model.DP.1, "'", "\n")
+
+  eval(parse(text = Model.DP.1))
+  model.SEM <- Model.DP
+
+  ## ================ ##
+
+  ## ========== Run model.SEM ========== ##
+  if (Cluster == "NULL") {
+    SEM.Model.fit <- lavaan::sem(model.SEM,
+                                 data.source,
+                                 group = Groups,
+                                 missing = 'fiml',
+                                 auto.fix.first = FALSE,
+                                 #     marker.int.zero = TRUE,
+                                 #     meanstructure = T,
+                                 information = 'observed',
+                                 estimator = 'MLR')
+  } else {
+    SEM.Model.fit <- lavaan::sem(model.SEM,
+                                 data.source,
+                                 group = Groups,
+                                 missing = 'fiml',
+                                 auto.fix.first = FALSE,
+                                 #     marker.int.zero = TRUE,
+                                 #     meanstructure = T,
+                                 information = 'observed',
+                                 cluster=Cluster,
+                                 estimator = 'MLR')
+  }  # end Cluster
+
+
+  ## Request summary outputs
+  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
+
+  SEM.Model.fit <<- SEM.Model.fit # Save SEM.Model.fit to Global Environment
+
+  ## ===== End (Run model.SEM) ===== ##
+
+  ## ========== Compare Parameters ========== ##
+
+  no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for defined parameter
+  par.est <- lavaan::coef(SEM.Model.fit)  # sample parameters
+  simvcov <- lavInspect(SEM.Model.fit, what="vcov")
+
+  if (TYPE == "MonteCarlo") {
+
+    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    bootcoef <- mcmc
+    bootno <- nrow(mcmc)  # No. of successful simulated samples
+    cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
+
+  } else { # TYPE=Bootstrap
+
+    ## == Simplified bootstrapping model == ##
+    SEM.boot <- lavaan::sem(model.SEM, data = data.source, group=Groups,
+                            #               meanstructure = TRUE,
+                            auto.fix.first = FALSE,
+                            #               marker.int.zero = TRUE,
+                            ordered = FALSE,
+                            missing = "fiml", se = "none", test="none", check.start = FALSE, check.post = FALSE, check.gradient = FALSE)
+
+    ## == Bootstrapping == ##
+    bootcoef <- lavaan::bootstrapLavaan(SEM.boot, R = b.no, ncpus = max(1L, parallel::detectCores() - 1L), parallel="snow")
+    bootno <- nrow(bootcoef)  # number of successful bootstrap samples
+
+    # Remove error and nonadmissible bootstrap samples #
+    B.na <- attr(bootcoef,"nonadmissible")
+    B.er <- attr(bootcoef,"error.idx")
+    B.de <- c(B.na,B.er)
+    if (length(B.de) != 0) {
+      B.re <- bootcoef[-c(B.de),]
+      bootcoef <- B.re
+    }
+    bootno <- nrow(bootcoef)  # number of successful bootstrap samples
+
+    ## Print Number of Successful Bootstrap Samples ##
+
+    cat("\n")
+    cat(paste0(" ===== Number of requested bootstrap samples, ", b.no, " ==== "))
+    cat("\n")
+    cat(paste0(" ===== Number of successful bootstrap samples, ", bootno, " ==== "))
+    cat("\n")
+
+  } ## end MonteCarlo or Bootstrap
+
+
+
+  ## === Calculate Estimated (dfE) and Bootstrapped (dfB) Defined Parameters === ##
+
+  sc <- capture.output(cat(model.SEM))
+  LDP <- grep(":=", sc)
+  ODP <- sc[LDP]
+  NDP <- ODP  # New defined parameters
+  BDP <- ODP  # For calculation of bootstrapped defined parameters
+  EDP <- ODP  # For calculation of estimated defined parameters
+
+  df1 <- "dfE <- data.frame("  # data.frame for estimated parameters
+  df2 <- "dfB <- data.frame("  # data.frame for bootstrapped parameters
+  for (n in 1: no.group) {
+    for (m in 1: length(par.label)) {
+      if (n == 1 & m == 1) {
+        df1 <- paste0(df1, "par.est['GP", n, par.label[m],"']")
+        df2 <- paste0(df2, "bootcoef[,'GP", n, par.label[m],"']")
+      } else {
+        df1 <- paste0(df1, ",", "par.est['GP", n, par.label[m],"']")
+        df2 <- paste0(df2, ",", "bootcoef[,'GP", n, par.label[m],"']")
+      }
+    }
+  }
+  df1 <- paste0(df1,")")
+  df2 <- paste0(df2,")")
+
+  eval(parse(text = df1))
+  eval(parse(text = df2))
+
+  # Rename columns in dfE #
+  k <- 1
+  for (n in 1: no.group) {
+    for (m in 1: length(par.label)) {
+      names(dfE)[k] <- paste0("GP", n, par.label[m])
+      colnames(dfB)[k] <- paste0("GP", n, par.label[m])
+      k <- k + 1
+    } # end loop m
+  } # end loop n
+
+  k <- 1
+  for (n in 1: no.group) {
+    for (p in 1:length(DP.name)) {
+      for (m in 1: length(par.label)) {
+        A <- paste0("GP", n, par.label[m])
+        E <- paste0("dfE['",A,"']")
+        B <- paste0("dfB['",A,"']")
+        EDP[k] <- gsub(A, E, EDP[k])
+        BDP[k] <- gsub(A, B, BDP[k])
+      } # end loop m
+      A <- paste0("GP",n,DP.name[p])
+      E <- paste0("dfE['",A,"']")
+      B <- paste0("dfB['",A,"']")
+      EDP[k] <- gsub(A, E, EDP[k])
+      BDP[k] <- gsub(A, B, BDP[k])
+      EDP[k] <- gsub(":=", "<-", EDP[k])
+      BDP[k] <- gsub(":=", "<-", BDP[k])
+      k <- k + 1
+    } # end loop p
+  } # end loop n
+
+  # Calculate Defined Parameters #
+  for (n in 1: (length(DP.name)*no.group)) {
+    eval(parse(text = EDP[n])) # Estimated
+    eval(parse(text = BDP[n])) # Bootstrapped
+  } # end loop n
+
+
+  ## === Finish Calculation === ##
+
+
+  Final.DP <- matrix(0, length(DP.name), no.group) # Create sample defined parameter matrix
+  LL99.DP <- matrix(0, length(DP.name), no.group) # Create 99% CI Lower Limit
+  LL95.DP <- matrix(0, length(DP.name), no.group) # Create 95% CI Lower Limit
+  LL90.DP <- matrix(0, length(DP.name), no.group) # Create 90% CI Lower Limit
+  UL99.DP <- matrix(0, length(DP.name), no.group) # Create 99% CI Upper Limit
+  UL95.DP <- matrix(0, length(DP.name), no.group) # Create 95% CI Upper Limit
+  UL90.DP <- matrix(0, length(DP.name), no.group) # Create 90% CI Upper Limit
+
+  colnames(Final.DP) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
+  rownames(Final.DP) <- paste0(" Defined Parameter ", DP.name, "   ")
+  for (i in 1: no.group) {
+    for (j in 1: length(DP.name)) {
+      Final.DP[j,i] <- as.numeric(dfE[no.group*length(par.label)+(i-1)*length(DP.name)+j])
+      LL99.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.005), na.rm = TRUE), digits=4)
+      LL95.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.025), na.rm = TRUE), digits=4)
+      LL90.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.05), na.rm = TRUE), digits=4)
+      UL90.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.95), na.rm = TRUE), digits=4)
+      UL95.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.975), na.rm = TRUE), digits=4)
+      UL99.DP[j,i] <- round(quantile(dfB[, no.group*length(par.label)+(i-1)*length(DP.name)+j],c(0.995), na.rm = TRUE), digits=4)
+    } # end loop j
+  } # end loop i
+
+  ## == Start the DP.no loop for CompareParameters == ##
+  for (DP.no in 1: no.DP) {
+
+    boot.dif.DP <- matrix(0, bootno, no.dif)  # Create bootstrap difference matrix
+    samp.dif.DP <- matrix(0, no.group, no.group) # Create sample difference matrix
+
+    ## == Calculate bootstrap difference and sample estimate difference == ##
+    comp = 0
+    for (r in 1:(no.group-1)) {  ## r is referent group
+      for (a in (r+1):no.group) {  ## a is argument group
+        kr.DP <<- no.group*length(par.label)+(r-1)*length(DP.name)  ## location of DP before r group
+        ka.DP <<- no.group*length(par.label)+(a-1)*length(DP.name)  ## location of DP before a group
+        comp = comp + 1
+        boot.dif.DP[,comp] <- dfB[,(kr.DP+DP.no)] - dfB[,(ka.DP+DP.no)]
+        samp.dif.DP[r,a] <- as.numeric(dfE[kr.DP+DP.no] - dfE[ka.DP+DP.no])
+      }  ## end loop a
+    }  ## end loop r
+
+
+    ## == Calculate Percentile Probability == ##
+
+    DP.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
+    colnames(DP.comp.pp) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
+    rownames(DP.comp.pp) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
+
+    comp = 0
+    for (r in 1:(no.group-1)) {  ## r is the referent group
+      for (a in (r+1):no.group) {  ## a is the argument
+        comp = comp + 1
+        if (quantile(boot.dif.DP[, comp], probs = 0.5, na.rm = TRUE) > 0) {
+          DP.comp.pp[r,a] = 2*(sum(boot.dif.DP[, comp] < 0, na.rm = TRUE)/bootno)
+          DP.comp.pp[a,r] = 2*(sum(boot.dif.DP[, comp] < 0, na.rm = TRUE)/bootno)
+        } else {
+          DP.comp.pp[r,a] = 2*(sum(boot.dif.DP[, comp] > 0, na.rm = TRUE)/bootno)
+          DP.comp.pp[a,r] = 2*(sum(boot.dif.DP[, comp] > 0, na.rm = TRUE)/bootno)
+        }  ## end if
+      }  ## end loop a
+    }  ## end loop r
+
+    ## == Percentile Confidence Intervals of Pairwise Comparisons == ##
+
+    no.k <- no.dif*10
+    PCI <- matrix(1:no.k, nrow = no.dif)
+    colnames(PCI) <- c("Group 1","Group 2","0.5%","2.5%","5%","Estimate","95%","97.5%","99.5%","p-value")
+
+    comp = 0
+    for (r in 1:(no.group-1)) {
+      for (a in (r+1):no.group) {
+        comp = comp + 1
+        PCI[comp, 1] <- r
+        PCI[comp, 2] <- a
+        PCI[comp, 3] <- round(quantile(boot.dif.DP[, comp],c(0.005), na.rm = TRUE), digits=4)
+        PCI[comp, 4] <- round(quantile(boot.dif.DP[, comp],c(0.025), na.rm = TRUE), digits=4)
+        PCI[comp, 5] <- round(quantile(boot.dif.DP[, comp],c(0.05), na.rm = TRUE), digits=4)
+        PCI[comp, 6] <- round(samp.dif.DP[r,a], digits=4)
+        PCI[comp, 7] <- round(quantile(boot.dif.DP[, comp],c(0.95), na.rm = TRUE), digits=4)
+        PCI[comp, 8] <- round(quantile(boot.dif.DP[, comp],c(0.975), na.rm = TRUE), digits=4)
+        PCI[comp, 9] <- round(quantile(boot.dif.DP[, comp],c(0.995), na.rm = TRUE), digits=4)
+        PCI[comp,10] <- round(DP.comp.pp[r,a], digits=4)
+      }  ## end loop a
+    }  ## end loop r
+
+    #$    cat("\n")
+    #$      print(PCI[],quote=F, nsmall=4, scientific=FALSE)
+
+    ## Print Defined Parameters ##
+    P.DP <- matrix(0, 7, no.group)
+    colnames(P.DP) <- paste0(" Group ", lavInspect(SEM.Model.fit, "group.label"), "   ")
+    rownames(P.DP) <- c("Estimated Defined Parameter", "Lower Limit 99% CI", "Lower Limit 95% CI", "Lower Limit 90% CI",
+                        "Upper Limit 90% CI", "Upper Limit 95% CI", "Upper Limit 99% CI")
+    P.DP[1,] <- Final.DP[DP.no,]
+    P.DP[2,] <- LL99.DP[DP.no,]
+    P.DP[3,] <- LL95.DP[DP.no,]
+    P.DP[4,] <- LL90.DP[DP.no,]
+    P.DP[5,] <- UL90.DP[DP.no,]
+    P.DP[6,] <- UL95.DP[DP.no,]
+    P.DP[7,] <- UL99.DP[DP.no,]
+
+    cat("\n")
+    cat("## ===== Defined Parameter: ", DP.name[DP.no], " ===== ##")
+    cat("\n")
+    print(P.DP, quote=F, row.names=TRUE, digits=4, nsmall=4, scientific=FALSE)
+    cat("\n")
+    cat("== p-values for pairwise comparisons ==")
+    cat("\n")
+    print(formatC(DP.comp.pp, digits=4, format="f"), quote=F)
+    cat("\n")
+
+  } # end loop DP.no
+
+} ## End (Function CompareParameters)
+
+# ==================== Finish Function "CompareParameters" ==================== #
+
+
 
 
 
