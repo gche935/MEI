@@ -2335,8 +2335,6 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #'
 CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluster="NULL", Bootstrap=0) {
 
-  options("width"=210)
-
   #  model.PMI <- PMI.Model.R
   #  model.PATH <- model.DP
   #  Bootstrap = 2000 # Number of bootstrap samples
