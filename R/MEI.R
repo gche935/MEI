@@ -687,6 +687,8 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   if (is.matrix(flYY) == FALSE) { flYY <<- matrix(flYY, nrow=1) }
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
+  NI.level <- unique(flY[, no.group+1])
+  NIcombine <- NIcombine[NI.level, NI.level] 
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -1672,6 +1674,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   if (is.matrix(txYY) == FALSE) { txYY <<- matrix(txYY, nrow=1) }
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
+    NI.level <- unique(txY[, no.group+1])
+    NIcombine <- NIcombine[NI.level, NI.level] 
 
     tempR <- unique(txYY[, no.group+1])
 
@@ -3203,6 +3207,8 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   if (is.matrix(flYY) == FALSE) { flYY <<- matrix(flYY, nrow=1) }
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
+  NI.level <- unique(flY[, no.group+1])
+  NIcombine <- NIcombine[NI.level, NI.level] 
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -4019,6 +4025,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   if (is.matrix(flYY) == FALSE) { flYY <<- matrix(flYY, nrow=1) }
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
+  NI.level <- unique(flY[, no.group+1])
+  NIcombine <- NIcombine[NI.level, NI.level] 
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -5134,6 +5142,9 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   if (is.matrix(txYY) == FALSE) { txYY <<- matrix(txYY, nrow=1) }
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
+    NI.level <- unique(txY[, no.group+1])
+    NIcombine <- NIcombine[NI.level, NI.level] 
+
 
     tempR <- unique(txYY[, no.group+1])
 
@@ -6345,6 +6356,9 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
   if (is.matrix(flYY) == FALSE) { flYY <<- matrix(flYY, nrow=1) }
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
+  NI.level <- unique(flY[, no.group+1])
+  NIcombine <- NIcombine[NI.level, NI.level] 
+
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -7453,6 +7467,9 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
   if (is.matrix(txYY) == FALSE) { txYY <<- matrix(txYY, nrow=1) }
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
+    NI.level <- unique(txY[, no.group+1])
+    NIcombine <- NIcombine[NI.level, NI.level] 
+
 
     tempR <- unique(txYY[, no.group+1])
 
