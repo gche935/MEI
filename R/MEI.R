@@ -2780,12 +2780,6 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #'
 MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
-#  model = Model.D
-#  data.source = Example.D
-#  Type1 = 0.05
-#  Type1Adj = "PFDR"
-#  Cluster="cluster"
-
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
   BMSC <- toupper(BMSC)
@@ -2795,31 +2789,22 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   arg4_char <<- deparse(substitute(Cluster))
 
   no.group <- 2
-
-  ## ===== Create Multilevel Model Model.ML.X ===== ##
-
-  Model.single <- lavaan::sem(model,
-                              data.source,
-                              cluster=Cluster,
-                              estimator = 'MLR')
-
-  #$ parameterEstimates(Model.single)
-
-  # -- Find out number of factors and number of items per factor -- #
   parsed <- lavParseModelString(model, as.data.frame = TRUE)
   parsed <- parsed[, c("lhs", "op", "rhs")]
   parsed <- parsed[parsed$op == "=~",]
-
   names.lv <- unique(parsed[,"lhs"])
   names.ind <- unique(parsed[, "rhs"])
-
-#  names.lv <- lavaan::lavNames(model, type = "lv")  # factor name
-  no.factor <- length(names.lv)  # number of factors
-#  names.ind <- lavaan::lavNames(model, type = "ov.ind")  # name of indicators
-  temp <- lavaan::parameterEstimates(Model.single)
+  no.factor <- length(names.lv)
+  no.items.g <- length(names.ind) # number of items per level
   no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
-  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~") } ## end loop factor.no
+  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
+  names.item <- list()
+  for (i in 1:no.factor) { 
+    names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+  }
+
+  ## ===== Create Multilevel Model Model.ML.X ===== ##
   ML.X <- paste0("Model.ML.X <- '", "\n", "level: 1", "\n")
   for (i in 1:factor.no) {
     ML.X <- paste0(ML.X, names.lv[i], "w =~ ")
@@ -2864,29 +2849,16 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   par.est <- lavaan::coef(Model.config)  # sample parameters
 
-  # Find out the number of factors and the number of items per factor #
-  parsed <- lavParseModelString(Model.ML.X, as.data.frame = TRUE)
-  parsed <- parsed[, c("lhs", "op", "rhs")]
-  parsed <- parsed[parsed$op == "=~",]
-
-  names.lv <- unique(parsed[,"lhs"])
-  names.ind <- unique(parsed[, "rhs"])
-
-#  names.lv <- lavaan::lavNames(Model.ML.X, type = "lv")  # factor name
-  no.factor <- length(names.lv)/2  # number of factors
-#  names.ind <- lavaan::lavNames(Model.ML.X, type = "ov.ind")  # name of indicators
   temp <- lavaan::parameterEstimates(Model.config)
-  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
-  for (factor.no in 1:no.factor) {
-    no.items[factor.no] <- sum(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~")
-  } ## end loop factor.no
   no.markers <- matrix(1:no.factor, nrow = 1)  # location of marker items
   for (factor.no in 1:no.factor) {
-    no.markers[factor.no] <- which(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~" & temp[,"est"] == 1)
+    no.markers[factor.no] <- which(temp[,"lhs"] == paste0(names.lv[factor.no],"w") & temp[,"op"] == "=~" & temp[,"est"] == 1)
     if (factor.no > 1) {no.markers[factor.no] <- no.markers[factor.no] - sum(no.items[1:(factor.no-1)])}
   } ## end loop factor.no
+
   temp <- lavaan::parameterEstimates(Model.config, remove.nonfree=TRUE)
   simvcov <- lavInspect(Model.config, what="vcov")
+  par.est <- lavaan::coef(Model.config)  # sample parameters
 
   ## Extraxt factor loadings ##
   ext <- c(which(temp[,"op"] == "=~"))
@@ -2905,14 +2877,14 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   if (Type1Adj == "PFDR") {  ## print adjusted error rate
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Adjusted by Possible False Discovery Rate) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no]-1)*(no.group-1)
+      no.adjust <- (no.items[factor.no]-1)
       ERate[factor.no] <- Type1 / no.adjust
       cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of free factor loadings = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
   } else if (Type1Adj == "BON") {
     cat("# -- Adjusted Type I Error Rates for Invariance Tests (Bonforroni adjustment for number of pairwise comparisons) -- #", rep("\n", 2))
     for (factor.no in 1: no.factor) {
-      no.adjust <- (no.items[factor.no]-1)*(no.group*(no.group-1)/2)
+      no.adjust <- (no.items[factor.no]-1)
       ERate[factor.no] <- Type1 / no.adjust
       cat(paste0("Factor ", factor.no, ": Number of items = ", no.items[factor.no], "; number of pairwise comparisons = ", no.adjust, "; adjusted error rate = ", sprintf("%.4f", ERate[factor.no]), "\n"))
     } # end (for factor.no)
@@ -2936,48 +2908,42 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
     alpha <- ERate[factor.no]
 
-    FL.kr <<- 1  ## location of first FL
-    if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
-
-    flY <<- matrix(" ",1, (no.group+2))
-    flYY <<- matrix(" ",1, (no.group+2))
+    flY <<- matrix(" ",1, 4)
+    flYY <<- matrix(" ",1, 4)
     EP <<- 1  # estimated parameter number
 
     no.k <- no.items[factor.no]*2  # number of factor loadings in FL.PMI
     FL.PMI <- matrix(1:no.k, nrow = 2)  # factor loading matrix
     colnames(FL.PMI) <- paste0(' Item ', 1:no.items[factor.no])
-    rownames(FL.PMI) <- c('Level: 1', 'Level: 2')
-
-    for (FL.item.g in 1:2) {
-      for (FL.item in 1:no.items[factor.no]) {
-        if (FL.item == no.markers[factor.no]) {
-          FL.PMI[FL.item.g, FL.item] <- 1
-        } else if (no.markers[factor.no] > FL.item) {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr], digits = 4), nsmall = 4, scientific = FALSE)
-        } else {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-        }  ## end if FL.item
-      }  ## end loop FL.item
-    }  ## end loop FL.item.g
+    rownames(FL.PMI) <- c(paste0("Level ", 1:2))
+    for (j in 1:no.items[factor.no]) {
+      if (j == no.markers[factor.no]) {
+        FL.PMI[1, j] <- 1
+      } else {
+        FL.PMI[1, j] <- format(round(par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[j]])], digits=4), scientific = FALSE)
+      }  ## end if j
+    }  ## end loop j
+    for (j in 1:no.items[factor.no]) {
+      if (j == no.markers[factor.no]) {
+        FL.PMI[2, j] <- 1
+      } else {
+        FL.PMI[2, j] <- format(round(par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[j]],".l2")], digits=4), scientific = FALSE)
+      }  ## end if j
+    }  ## end loop j
 
     class(FL.PMI) <- "numeric"
 
+
     for (Referent in 1:no.items[factor.no]) {  ## Loop referent item number for comparison
 
-      ## ==  Print Factor Loadings of all groups  == ##
-      no.k <- no.items[factor.no]*no.group  # number of factor loadings in FL
-      FL <- matrix(1:no.k, nrow = no.group)  # factor loading matrix
+      ## ==  Print Factor Loadings of all levels  == ##
+      no.k <- no.items[factor.no]*2  # number of factor loadings in FL
+      FL <- matrix(1:no.k, nrow = 2)  # factor loading matrix
       colnames(FL) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(FL) <- lavaan::lavInspect(Model.config, "group.label")
 
-      if (factor.no == 1) {
-        FL.kr <<- 0  ## location of lx in last factor.no
-      } else {
-        FL.kr <<- sum(no.items[1:(factor.no-1)])  ## location of lx in last factor.no
-      } # end if factor.no
-
       if (Referent == 1) {  ## if referent is the first item
-        for (FL.item.g in 1:no.group) {
+        for (FL.item.g in 1:2) {
           for (FL.item in 1:no.items[factor.no]) {
             if (FL.item == Referent) {
               FL[FL.item.g, FL.item] <- 1
@@ -2987,12 +2953,12 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
           }  ## end loop FL.item
         }  ## end loop FL.item.g
       } else {  ## referent is not the first item
-        for (FL.item.g in 1:no.group) {
+        for (FL.item.g in 1:2) {
           for (FL.item in 1:no.items[factor.no]) {
             if (FL.item == Referent) {
               FL[FL.item.g, FL.item] <- 1
             } else {
-              FL[FL.item.g, FL.item] <- FL.PMI[FL.item.g,FL.item]/FL.PMI[FL.item.g,Referent]
+              FL[FL.item.g, FL.item] <- FL.PMI[FL.item.g,FL.item]/FL.PMI[FL.item.g, Referent]
             }  ## end if FL.item
           }  ## end loop FL.item
         }  ## end loop FL.item.g
@@ -3004,9 +2970,9 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
     ## == End (Print Factor Loadings)  == ##
 
       for (nArg in 1: no.items[factor.no]) {  ## Argument item number for comparison
-        no.dif <- factorial(no.group) / factorial(no.group - 2) / 2  # No. of pairwise comparisons for each item
+        no.dif <- 1 # No. of pairwise comparisons for each item
         boot.dif.lx <- matrix(0, nrow(bootcoef), no.dif)  # Create bootstrap difference matrix
-        samp.dif.lx <- matrix(0, no.group, no.group) # Create sample difference matrix
+        samp.dif.lx <- matrix(0, 2, 2) # Create sample difference matrix
         if (nArg == Referent) {
           next
         } else {
@@ -3016,137 +2982,94 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
       ## == Calculate bootstrap difference and sample estimate difference == ##
         comp = 0
-        for (r in 1:(no.group-1)) {  ## r is referent group
-          for (a in (r+1):no.group) {  ## a is argument group
-            kr <<- FL.kr + (no.par.g*(r-1)) ## location of lx before r group
-            ka <<- FL.kr + (no.par.g*(a-1)) ## location of lx before a group
-
-          comp = comp + 1
-          if (Referent == 1) {
-            boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no] - bootcoef[, ka+Arg-factor.no]
-            samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no] - par.est[ka+Arg-factor.no]
-
-#$ print("Referent = 1")
-#$ print(par.est[kr+Arg-factor.no])
-#$ print(par.est[ka+Arg-factor.no])
-
-          } else {
-            if (Arg == 1) {
-              boot.dif.lx[,comp] <- 1/bootcoef[, kr+Referent-factor.no] - 1/bootcoef[, ka+Referent-factor.no]
-              samp.dif.lx[r,a] <- 1/par.est[kr+Referent-factor.no] - 1/par.est[ka+Referent-factor.no]
-
-#$ print("Arg = 1")
-#$ print(par.est[kr+Referent-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
-#            } else if (Referent > Arg) {
-#              boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no]/bootcoef[, kr+Referent-factor.no] -
-#                                    bootcoef[, ka+Arg-factor.no]/bootcoef[, ka+Referent-factor.no]
-#              samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no]/par.est[kr+Referent-factor.no] -
-#                                  par.est[ka+Arg-factor.no]/par.est[ka+Referent-factor.no]
-
-# print("Referent > Arg")
-# print(par.est[ka+Arg-factor.no])
-# print(par.est[ka+Referent-factor.no])
-
-            } else { # Arg != 1
-              boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no]/bootcoef[, kr+Referent-factor.no] -
-                                    bootcoef[, ka+Arg-factor.no]/bootcoef[, ka+Referent-factor.no]
-              samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no]/par.est[kr+Referent-factor.no] -
-                                  par.est[ka+Arg-factor.no]/par.est[ka+Referent-factor.no]
-
-#$ print("Referent < Arg")
-#$ print(par.est[ka+Arg-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
-            }  ## end if Arg
-          }  ## end if Referent
-        }  ## end loop a
-      }  ## end loop r
+        comp = comp + 1
+        if (Referent == 1) {
+          boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] - 
+                                bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
+          samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] - 
+                              par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
+        } else {
+          if (Arg == no.markers[factor.no]) {
+            boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] - 
+                                  1/bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")] 
+            samp.dif.lx[1,2] <- 1/par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] - 
+                                1/par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")] 
+          } else { # Arg != no.markers[factor.no]
+            boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])]/
+                                  bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
+                                  bootcoef[,paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]/
+                                  bootcoef[,paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
+            samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])]/
+                                par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
+                                par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]/
+                                par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
+          }  ## end if Arg
+        }  ## end if Referent
 
 #$ print(samp.dif.lx)
 
 
       ## == Calculate Percentile Probability == ##
 
-      F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
+      F1.comp.pp <- matrix(0, 2, 2)  ## Percentile Probability
       pno_nipair <- 0  ## Set number of non-invariant pairs to zero
 
       comp = 0
-      for (r in 1:(no.group-1)) {  ## r is the referent group
-        for (a in (r+1):no.group) {  ## a is the argument
-          comp = comp + 1
-          if (quantile(boot.dif.lx[, comp], probs = 0.5, na.rm = TRUE) > 0) {
-            F1.comp.pp[r,a] = 2*(sum(boot.dif.lx[, comp] < 0, na.rm=TRUE)/bootno)
-          } else {
-            F1.comp.pp[r,a] = 2*(sum(boot.dif.lx[, comp] > 0, na.rm=TRUE)/bootno)
-          }  ## end if
-        }  ## end loop a
-      }  ## end loop r
+      comp = comp + 1
+      if (quantile(boot.dif.lx[, comp], probs = 0.5, na.rm = TRUE) > 0) {
+        F1.comp.pp[1,2] = 2*(sum(boot.dif.lx[, comp] < 0, na.rm=TRUE)/bootno)
+      } else {
+        F1.comp.pp[1,2] = 2*(sum(boot.dif.lx[, comp] > 0, na.rm=TRUE)/bootno)
+      }  ## end if
 
 
       ## == Percentile Confidence Intervals of Pairwise Comparisons == ##
 
       PCI <- matrix(1:(no.dif*10), nrow = no.dif)
-      colnames(PCI) <- c("Group 1","Group 2","0.5%","2.5%","5%","Estimate","95%","97.5%","99.5%","p-value")
+      colnames(PCI) <- c("Level 1","Level 2","0.5%","2.5%","5%","Estimate","95%","97.5%","99.5%","p-value")
 
       comp = 0
-      for (r in 1:(no.group-1)) {
-        for (a in (r+1):no.group) {
-          comp = comp + 1
-          PCI[comp, 1] <- r
-          PCI[comp, 2] <- a
-          PCI[comp, 3] <- quantile(boot.dif.lx[, comp],c(0.005), na.rm = TRUE)
-          PCI[comp, 4] <- quantile(boot.dif.lx[, comp],c(0.025), na.rm = TRUE)
-          PCI[comp, 5] <- quantile(boot.dif.lx[, comp],c(0.05), na.rm = TRUE)
-          PCI[comp, 6] <- samp.dif.lx[r,a]
-          PCI[comp, 7] <- quantile(boot.dif.lx[, comp],c(0.95), na.rm = TRUE)
-          PCI[comp, 8] <- quantile(boot.dif.lx[, comp],c(0.975), na.rm = TRUE)
-          PCI[comp, 9] <- quantile(boot.dif.lx[, comp],c(0.995), na.rm = TRUE)
-          PCI[comp,10] <- F1.comp.pp[r,a]
-          if (F1.comp.pp[r,a] < alpha) {
-            if (pno_nipair == 0)	{
-              pnipair <- c(r,a)
-              pno_nipair <- pno_nipair + 1
-            } else {
-              pnipair <- c(pnipair,r,a)
-              pno_nipair <- pno_nipair + 1
-            }  ## end if pno_nipair
-          }  ## end if F1.comp.pp
-        }  ## end loop a
-      }  ## end loop r
+      comp = comp + 1
+      PCI[comp, 1] <- 1
+      PCI[comp, 2] <- 2
+      PCI[comp, 3] <- quantile(boot.dif.lx[, comp],c(0.005), na.rm = TRUE)
+      PCI[comp, 4] <- quantile(boot.dif.lx[, comp],c(0.025), na.rm = TRUE)
+      PCI[comp, 5] <- quantile(boot.dif.lx[, comp],c(0.05), na.rm = TRUE)
+      PCI[comp, 6] <- samp.dif.lx[1,2]
+      PCI[comp, 7] <- quantile(boot.dif.lx[, comp],c(0.95), na.rm = TRUE)
+      PCI[comp, 8] <- quantile(boot.dif.lx[, comp],c(0.975), na.rm = TRUE)
+      PCI[comp, 9] <- quantile(boot.dif.lx[, comp],c(0.995), na.rm = TRUE)
+      PCI[comp,10] <- F1.comp.pp[1,2]
+      if (F1.comp.pp[1,2] < alpha) {
+        if (pno_nipair == 0)	{
+          pnipair <- c(1,2)
+          pno_nipair <- pno_nipair + 1
+        } else {
+          pnipair <- c(pnipair,1,2)
+          pno_nipair <- pno_nipair + 1
+        }  ## end if pno_nipair
+      }  ## end if F1.comp.pp
 
-#$      cat("\n")
-#$      if (Referent > Arg) {
-#$        cat(paste0("Referent Item: ", Referent, "  Argument Item: ", Arg, "\n"))
-#$      } else {
-#$        cat(paste0("Referent Item: ", Referent, "  Argument Item: ", (Arg+1), "\n"))
-#$      }  ## end if Referent
-
-#$      cat("\n")
-
-#$    print(paste0("Factor = ", factor.no, "  Referent = ", Referent, " Argument = ", Arg))
-#$    print(round(PCI[], digits=4))
 
       ## == Run List and Delete == ##
 #$      cat(rep("\n", 2), "Sets of Groups with Invariant Loadings", "\n")
         if (pno_nipair == no.dif) {
 
-          flZ <<- matrix(" ", 1, (no.group+2))
-          flX <<- matrix(1:(no.group+2), 1, (no.group+2))
+          flZ <<- matrix(" ", 1, 4)
+          flX <<- matrix(1:4, 1, 4)
           flX[1, 1:no.group] <- 0
-          for (temp.flZ in 1: no.group) {
+          for (temp.flZ in 1: 2) {
             flZ[1,temp.flZ] <- paste0("F", factor.no, "L", EP)
             EP <<- EP + 1
           }
-          flX[1, (no.group+1)] <- Referent
-          flZ[1, (no.group+1)] <- Referent
+          flX[1, 3] <- Referent
+          flZ[1, 3] <- Referent
 #?          if (Referent > Arg) {
-            flX[1, (no.group+2)] <- Arg
-            flZ[1, (no.group+2)] <- Arg
+            flX[1, 4] <- Arg
+            flZ[1, 4] <- Arg
 #?          } else {
-#?            flX[1, (no.group+2)] <- Arg + 1
-#?            flZ[1, (no.group+2)] <- Arg + 1
+#?            flX[1, 4] <- Arg + 1
+#?            flZ[1, 4] <- Arg + 1
 #?          }  ## end if Referent
 #$        print(flX, quote=FALSE)
           flY <<- rbind(flY,flX)
@@ -3155,21 +3078,21 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
         } else if (pno_nipair > 0) {
 
-          flX <<- matrix(" ", 1, (no.group+2))
-          flZ <<- matrix(" ", 1, (no.group+2))
+          flX <<- matrix(" ", 1, 4)
+          flZ <<- matrix(" ", 1, 4)
 
           listanddelete.lx(factor.no, no.group, no_nipair=pno_nipair, nipair=pnipair, Referent, Arg) ## Run list and delete lx
 
         } else {  # (pno_nipair = 0)
 
-          flX <- matrix(1:(no.group+2), 1, (no.group+2))
-          flZ <<- matrix(" ", 1, (no.group+2))
+          flX <- matrix(1:4, 1, 4)
+          flZ <<- matrix(" ", 1, 4)
           flZ <- matrix(paste0("F", factor.no, "L", EP), 1, (no.group+2))
           EP <<- EP + 1
-          flX[1, (no.group+1)] <- Referent
-          flZ[1, (no.group+1)] <- Referent
-          flX[1, (no.group+2)] <- Arg
-          flZ[1, (no.group+2)] <- Arg
+          flX[1, 3] <- Referent
+          flZ[1, 3] <- Referent
+          flX[1, 4] <- Arg
+          flZ[1, 4] <- Arg
           flY <<- rbind(flY,flX)
 #$        print(flZ, quote=FALSE)
           flYY <<- rbind(flYY,flZ)
@@ -3178,18 +3101,18 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       } ## end loop Arg
     } ## end loop Referent
 
-  if (length(unique(flY[, no.group+1])) == 2 & no.items[factor.no] == 2) { # Only 2 groups with more than 2 items
-    flX <<- matrix(1:(no.group+2), 1, (no.group+2))
-    flZ <<- matrix(" ", 1, (no.group+2))
-    flYa <<- flY[nrow(flY), no.group+1]
-    flYb <<- flY[nrow(flY), no.group+2]
-    flX[1, no.group + 1] <- flYb
-    flX[1, no.group + 2] <- flYa
+  if (length(unique(flY[, 3])) == 2 & no.items[factor.no] == 2) { # Only 2 groups with more than 2 items
+    flX <<- matrix(1:4, 1, 4)
+    flZ <<- matrix(" ", 1, 4)
+    flYa <<- flY[nrow(flY), 3]
+    flYb <<- flY[nrow(flY), 4]
+    flX[1, 3] <- flYb
+    flX[1, 4] <- flYa
     flY <<- rbind(flY,flX)
 
-    flZ[1, no.group + 1] <- flYb
-    flZ[1, no.group + 2] <- flYa
-    for (temp.flYY in 1: no.group) {
+    flZ[1, 3] <- flYb
+    flZ[1, 4] <- flYa
+    for (temp.flYY in 1: 2) {
       flZ[1, temp.flYY] <- paste0("F", factor.no, "I", EP)
       EP <- EP + 1
     }
@@ -3206,21 +3129,21 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   if (is.matrix(flYY) == FALSE) { flYY <<- matrix(flYY, nrow=1) }
 
-  NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
-  NI.level <- unique(flY[, no.group+1])
+  NIcombine <- table(flY[, 3], flY[, 4])
+  NI.level <- unique(flY[, 3])
   NIcombine <- NIcombine[NI.level, NI.level] 
 
-  tempR <- unique(flYY[, no.group+1])
+  tempR <- unique(flYY[, 3])
 
     for (aR in 1:length(tempR)) {
       R <- tempR[aR]
       for (r in 1:no.items[factor.no]) {
         if (r == 1) {
-          assign(paste0("Rset", r), c(length(which(flYY[,no.group+1] < R))+1:(NIcombine[R, r])))
+          assign(paste0("Rset", r), c(length(which(flYY[,3] < R))+1:(NIcombine[R, r])))
         } else if (r == R) {
           assign(paste0("Rset", r), 0)
         } else {
-          assign(paste0("Rset", r), c(length(which(flYY[,no.group+1] < R))+sum(NIcombine[R, 1:(r-1)])+1:(NIcombine[R, r])))
+          assign(paste0("Rset", r), c(length(which(flYY[,3] < R))+sum(NIcombine[R, 1:(r-1)])+1:(NIcombine[R, r])))
         }
         if (R == 1) { assign("Rset1", 0) }
       }  ## end loop r
@@ -3235,17 +3158,17 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       } ## end if R
     }  ## end loop aR
 
-    Model.load <- array(" ", dim = c(no.items[factor.no], no.group, nrow(Set.row)))  # all possible invariance models
+    Model.load <- array(" ", dim = c(no.items[factor.no], 2, nrow(Set.row)))  # all possible invariance models
 
     for (Xset in 1: nrow(Set.row)) {
-      a <- matrix(" ", no.items[factor.no], no.group)
+      a <- matrix(" ", no.items[factor.no], 2)
       for (r in 1:no.items[factor.no]) {
         if (Set.row[Xset, r] == 0) {
           a[r, ] <- 1
         } else {
-          a[r, ] <- flYY[Set.row[Xset, r], 1:no.group]
+          a[r, ] <- flYY[Set.row[Xset, r], 1:2]
         } ## end if Set.row
-#?        if (flYY[r, no.group+1] > 1) { break }
+#?        if (flYY[r, 3] > 1) { break }
       }  ## end loop r
       Model.load[, , Xset] <- a
     }  ## end loop Xset
@@ -3283,7 +3206,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       MODFIT <- matrix(0, nrow = length(Rec.Model), ncol = 10)
       colnames(MODFIT) <-
         c("  chisq", "  df", "  pvalue", "  rmsea", "  cfi", "  tli", "  srmr_within", "  srmr_between", "  aic", "  bic")
-      Rec.Model.FL <- array(0, dim = c(no.group, no.items[factor.no], length(Rec.Model)))
+      Rec.Model.FL <- array(0, dim = c(2, no.items[factor.no], length(Rec.Model)))
       colnames(Rec.Model.FL) <- paste0(" Item ", 1:no.items[factor.no])
       rownames(Rec.Model.FL) <- c("Level: 1", "Level: 2")
 
@@ -3291,17 +3214,20 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
         ## == Specify the partial metric invariance models (PMI.X) == ##
         PMI.X.1 <- paste0("PMI.X <- '", "\n", "level: 1", "\n",
-                          names.lv[factor.no], " =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.ind[(FL.kr+1)], " + ")
+                          names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + ")
+
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI.X.1 <- paste0(PMI.X.1, paste0(Model.load[i, 1, Rec.Model[Model.R]]),"*", names.ind[FL.kr+i], " + ")
+          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 1, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i]], " + ")
         } ## end loop i
-        PMI.X.1 <- paste0(PMI.X.1, paste0(Model.load[i+1, 1, Rec.Model[Model.R]]),"*", names.ind[FL.kr+i+1])
+        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 1, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i+1]])
+
         PMI.X.1 <- paste0(PMI.X.1, paste0("\n", "level: 2", "\n",
-                          names.lv[no.factor+factor.no], " =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.ind[(FL.kr+1)], " + "))
+                          names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI.X.1 <- paste0(PMI.X.1, paste0(Model.load[i, 2, Rec.Model[Model.R]]),"*", names.ind[FL.kr+i], " + ")
+          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 2, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i]], " + ")
         } ## end loop i
-          PMI.X.1 <- paste0(PMI.X.1, paste0(Model.load[i+1, 2, Rec.Model[Model.R]]),"*", names.ind[FL.kr+i+1], " '")
+        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 2, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i+1]], " '")
 
         eval(parse(text = PMI.X.1))
 
@@ -3369,22 +3295,21 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
     ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {Recommend.Model <- matrix("PMI.Model.R <- '", 1)}
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 1"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", paste0(R.Model[1,1]), "*", names.ind[(FL.kr+1)], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0("level: 1", "\n"))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+
       for (i in 2: (no.items[factor.no]-1)) {
-        Recommend.Model <- rbind(Recommend.Model, paste0("    ",paste0(R.Model[i,1],"*",names.ind[FL.kr+i], " + ")))
+        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,1],"*", names.item[[factor.no]][[i]]," + ")))
       }  ## end loop i
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[no.items[factor.no], 1],"*", names.ind[(FL.kr+no.items[factor.no])])))
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[no.factor+factor.no], " =~ ", paste0(R.Model[1,2]), "*", names.ind[(FL.kr+1)], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,1],"*", names.item[[factor.no]][[i+1]], "\n")))
+
+      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2", "\n"))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+
       for (i in 2: (no.items[factor.no]-1)) {
-        Recommend.Model <- rbind(Recommend.Model, paste0("    ",paste0(R.Model[i,2],"*",names.ind[FL.kr+i], " + ")))
+        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,2],"*", names.item[[factor.no]][[i]]," + ")))
       }  ## end loop i
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[no.items[factor.no], 2],"*", names.ind[(FL.kr+no.items[factor.no])])))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,2],"*", names.item[[factor.no]][[i+1]], "\n")))
 
     }  ## end if no.items[factor.no] > 2
 
@@ -3396,16 +3321,12 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
       ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {Recommend.Model <- matrix("PMI.Model.R <- '", 1)}
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 1"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", paste0(R.Model[1,1]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 1],"*", names.ind[(FL.kr+no.items[factor.no])])))
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[no.factor+factor.no], " =~ ", paste0(R.Model[1,2]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 2],"*", names.ind[(FL.kr+no.items[factor.no])])))
+      Recommend.Model <- rbind(Recommend.Model, paste0("level: 1", "\n"))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,1],"*", names.item[[factor.no]][[2]], "\n")))
+      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2", "\n"))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,2],"*", names.item[[factor.no]][[2]], "\n")))
 
     }  ## End (Models with 2 items)
 
@@ -3489,6 +3410,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
 
 # ==================== Finish Function "MLCompareLoadings" ==================== #
+
 
 
 
@@ -5844,6 +5766,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
 
 
+
 # ==================== Create Function "PAIRCompareLoadings" ==================== #
 #' Metric Invariance Test Between Two Sources
 #'
@@ -5979,13 +5902,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
   par.est <- lavaan::coef(Model.Long.config)  # sample parameters
 
-#  # Find out the number of factors and the number of items per factor #
-#  parsed <- lavParseModelString(Model.Long, as.data.frame = TRUE)
-#  parsed <- parsed[, c("lhs", "op", "rhs")]
-#  parsed <- parsed[parsed$op == "=~",]
-#  names.lv <- unique(parsed[,"lhs"])
-#  names.ind <- unique(parsed[, "rhs"])
-
   temp <- lavaan::parameterEstimates(Model.Long.config)
   no.markers <- matrix(1:no.factor, nrow = 1)  # location of marker items
   for (factor.no in 1:no.factor) {
@@ -6108,11 +6024,11 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
       rownames(FL) <- c(paste0("Group ", 1:no.group))
 
 
-      if (factor.no == 1) {
-        FL.kr <<- 0  ## location of lx in last factor.no
-      } else {
-        FL.kr <<- sum(no.items[1:(factor.no-1)])  ## location of lx in last factor.no
-      } # end if factor.no
+#      if (factor.no == 1) {
+#        FL.kr <<- 0  ## location of lx in last factor.no
+#      } else {
+#        FL.kr <<- sum(no.items[1:(factor.no-1)])  ## location of lx in last factor.no
+#      } # end if factor.no
 
       if (Referent == 1) {  ## if referent is the first item
         for (FL.item.g in 1:no.group) {
@@ -6156,8 +6072,8 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is referent group
           for (a in (r+1):no.group) {  ## a is argument group
-            kr <<- FL.kr + (no.par.g*(r-1)) ## location of lx before r group
-            ka <<- FL.kr + (no.par.g*(a-1)) ## location of lx before a group
+#            kr <<- FL.kr + (no.par.g*(r-1)) ## location of lx before r group
+#            ka <<- FL.kr + (no.par.g*(a-1)) ## location of lx before a group
 
           comp = comp + 1
           if (Referent == 1) {
@@ -6555,15 +6471,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
       for (j in 1:no.un.load) { R.Model[R.Model == un.load[j]] <- paste0("F", factor.no, "L", j) }  ## end loop j
 
       ## == Save Recommended Model (Recommend.Model) == ##
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", paste0(R.Model[1,1]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 1],"*", names.ind[(FL.kr+no.items[factor.no])])))
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[no.factor+factor.no], " =~ ", paste0(R.Model[1,2]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 2],"*", names.ind[(FL.kr+no.items[factor.no])])))
 
       if (factor.no == 1) {
         Recommend.Model <- matrix("PMI.Model.R <- '", 1)
@@ -6708,6 +6615,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 } ## End (Function PAIRCompareLoadings)
 
 # ==================== Finish Function "PAIRCompareLoadings" ==================== #
+
 
 
 
