@@ -3414,6 +3414,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
 
 
+
 # ==================== Create Function "LGCompareLoadings" ==================== #
 #' Metric Invariance for Longitudinal Panel Data
 #'
@@ -3450,14 +3451,15 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 #'
 LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
-  model <<- model
+#  model <<- model
 #  Bootstrap = 0 # Number of bootstrap samples
-#  model = Model.C
-#  data.source = Example.C
+#  model = Model.B
+#  data.source = Data # Example.B
 #  Type1 = 0.05
 #  Type1Adj = "PFDR"
 #  Cluster="NULL"
 #  no.waves <- 3
+#  BMSC="SRMR"
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
@@ -3472,10 +3474,16 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   parsed <- parsed[, c("lhs", "op", "rhs")]
   parsed <- parsed[parsed$op == "=~",]
   names.lv <- unique(parsed[,"lhs"])
-  names.ind.or <- unique(parsed[, "rhs"])
+  names.ind <- unique(parsed[, "rhs"])
+  no.factor <- length(names.lv)
+  no.items.g <- length(names.ind) # number of items per group
+  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
+  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
-#  names.lv <- lavaan::lavNames(model, type = "lv")  # factor name
-#  names.ind.or <- lavaan::lavNames(model, type = "ov.ind")  # name of indicators in input model
+  names.item <- list()
+  for (i in 1:no.factor) { 
+    names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+  }
 
   ## Check for bootstrap sample number (Bootstrap) ##
   if (Bootstrap !=0) {
@@ -3489,59 +3497,24 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     TYPE = "MonteCarlo"
   } # end (Bootstrap != 0)
 
-  no.lv <- length(names.lv)
-  no.ov <- length(names.ind.or)
-  for (i in 1: no.lv) { model <- eval(parse(text = (paste0("sub('",names.lv[i],"', '", names.lv[i], "_T1', model, fixed=TRUE)")))) }
-  for (i in 1: no.ov) { model <- eval(parse(text = (paste0("sub('",names.ind.or[i],"', '", names.ind.or[i], "_T1', model, fixed=TRUE)")))) }
+  for (i in 1: no.factor) { model <- eval(parse(text = (paste0("sub('", names.lv[i],"', '", names.lv[i], "_T1', model, fixed=TRUE)")))) }
+  for (i in 1: no.items.g) { model <- eval(parse(text = (paste0("sub('", names.ind[i],"', '", names.ind[i], "_T1', model, fixed=TRUE)")))) }
+
 
   ## -- Create Model.Long with all waves and covary residuals -- ##
-  Model.Long <- paste0("\n", model, "\n")
-  for (i in 2: no.waves) { Model.Long <- paste0(Model.Long, gsub("T1", paste0("T", i), model), "\n") }
-
-  Model.temp.fit <- lavaan::sem(Model.Long,
-                      data.source,
-                      missing = 'fiml',
-                      marker.int.zero = TRUE,
-                      meanstructure = T,
-                      estimator = 'MLR')
-
-  #$  lavaan::summary(Model.temp.fit, fit.measure = T, standardized = T, rsq = T)
-  #$  parameterEstimates(Model.temp.fit)
-
-  # -- Find out number of factors and number of items per factor -- #
-  parsed <- lavParseModelString(Model.Long, as.data.frame = TRUE)
-  parsed <- parsed[, c("lhs", "op", "rhs")]
-  parsed <- parsed[parsed$op == "=~",]
-  names.lv <- unique(parsed[,"lhs"])
-  names.ind <- unique(parsed[, "rhs"])
-
-#  names.lv <- lavaan::lavNames(Model.Long, type = "lv")  # factor name
-  no.factor <- length(names.lv)/no.waves  # number of factors per wave
-#  names.ind <- lavaan::lavNames(Model.Long, type = "ov.ind")  # name of indicators
-  no.items.g <- length(names.ind)/no.waves # number of items per wave
-  temp <- lavaan::parameterEstimates(Model.temp.fit)
-  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
-  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~") } ## end loop factor.no
+  Model.Long <- model
+  for (i in 2: no.waves) { Model.Long <- paste0(Model.Long, gsub("T1", paste0("T", i), model)) }
+  Model.Long <- paste0(Model.Long, "\n")
 
   ## == Create Residual Covariance == ##
-  Model.Long <- paste0(Model.Long, "\n")
-  for (h in 1:no.factor) {
-    for (i in 1:no.items[h]) {
-      for (j in 1:(no.waves - 1)) {
-        if (h == 1) {
-          for (k in (j+1):no.waves) {
-            Model.Long <- paste0(Model.Long, "  ", names.ind[no.items.g*(j-1)+i], " ~~ ", names.ind[no.items.g*(k-1)+i], "\n")
-          }
-        } else {
-          for (k in (j+1):no.waves) {
-            Model.Long <-
-              paste0(Model.Long, "  ", names.ind[no.items.g*(j-1)+i+sum(no.items[1:(h-1)])], " ~~ ", names.ind[no.items.g*(k-1)+i+sum(no.items[1:(h-1)])],"\n")
-          }
-        }
+  for (i in 1:no.items.g) {
+    for (j in 1:(no.waves - 1)) {
+      for (k in (j+1):no.waves) {
+        Model.Long <- paste0(Model.Long, "  ", names.ind[i], "_T", j, " ~~ ", names.ind[i], "_T", k, "\n")
       }
     }
   }
-  ## Finish creating Model.Long ##
+  ## -- Finish creating Model.Long -- ##
 
 
   ## ===== Run Configural Model ===== ##
@@ -3575,23 +3548,14 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   par.est <- lavaan::coef(Model.Long.config)  # sample parameters
 
-  # Find out the number of factors and the number of items per factor #
-  parsed <- lavParseModelString(Model.Long, as.data.frame = TRUE)
-  parsed <- parsed[, c("lhs", "op", "rhs")]
-  parsed <- parsed[parsed$op == "=~",]
-  names.lv <- unique(parsed[,"lhs"])
-  names.ind <- unique(parsed[, "rhs"])
-
-#  names.lv <- lavaan::lavNames(Model.Long, type = "lv")  # factor name
-  no.factor <- length(names.lv)/no.waves  # number of factors
-#  names.ind <- lavaan::lavNames(Model.Long, type = "ov.ind")  # name of indicators
+  temp <- lavaan::parameterEstimates(Model.Long.config)
   no.markers <- matrix(1:no.factor, nrow = 1)  # location of marker items
   for (factor.no in 1:no.factor) {
-    no.markers[factor.no] <- which(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~" & temp[,"est"] == 1)
+    no.markers[factor.no] <- which(temp[,"lhs"] == paste0(names.lv[factor.no],"_T1") & temp[,"op"] == "=~" & temp[,"est"] == 1)
     if (factor.no > 1) {no.markers[factor.no] <- no.markers[factor.no] - sum(no.items[1:(factor.no-1)])}
   } ## end loop factor.no
-  temp <- lavaan::parameterEstimates(Model.Long.config, remove.nonfree=TRUE)
 
+  temp <- lavaan::parameterEstimates(Model.Long.config, remove.nonfree=TRUE)
   simvcov <- lavInspect(Model.Long.config, what="vcov")
   par.est <- lavaan::coef(Model.Long.config)  # sample parameters
 
@@ -3599,8 +3563,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   ext <- c(which(temp[,"op"] == "=~"))
   par.est <- par.est[ext]
   simvcov <- simvcov[ext,ext]
-  no.par.g <- length(par.est)/no.waves  # number of estimated LX per level #
-
+  no.par.g <- length(par.est)/2  # number of estimated LX per group #
 
 
   cat(rep("\n", 3), "## ======= METRIC INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
@@ -3673,9 +3636,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
     alpha <- ERate[factor.no]
 
-    FL.kr <<- 1  ## location of first FL
-    if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
-
     flY <<- matrix(" ",1, (no.group+2))
     flYY <<- matrix(" ",1, (no.group+2))
     EP <<- 1  # estimated parameter number
@@ -3685,17 +3645,15 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     colnames(FL.PMI) <- paste0(' Item ', 1:no.items[factor.no])
     rownames(FL.PMI) <- c(paste0("Time ", 1:no.group))
 
-    for (FL.item.g in 1:no.group) {
-      for (FL.item in 1:no.items[factor.no]) {
-        if (FL.item == no.markers[factor.no]) {
-          FL.PMI[FL.item.g, FL.item] <- 1
-        } else if (no.markers[factor.no] > FL.item) {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr], digits = 4), nsmall = 4, scientific = FALSE)
+    for (i in 1:no.group) {
+      for (j in 1:no.items[factor.no]) {
+        if (j == no.markers[factor.no]) {
+          FL.PMI[i, j] <- 1
         } else {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-        }  ## end if FL.item
-      }  ## end loop FL.item
-    }  ## end loop FL.item.g
+          FL.PMI[i, j] <- format(round(par.est[paste0(names.lv[factor.no],"_T",i,"=~", names.item[[factor.no]][[j]],"_T",i)], digits=4), scientific = FALSE)
+        }  ## end if j
+      }  ## end loop j
+    }  ## end loop i
 
     class(FL.PMI) <- "numeric"
 
@@ -3706,13 +3664,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
       FL <- matrix(1:no.k, nrow = no.group)  # factor loading matrix
       colnames(FL) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(FL) <- c(paste0("Time ", 1:no.group))
-
-
-      if (factor.no == 1) {
-        FL.kr <<- 0  ## location of lx in last factor.no
-      } else {
-        FL.kr <<- sum(no.items[1:(factor.no-1)])  ## location of lx in last factor.no
-      } # end if factor.no
 
       if (Referent == 1) {  ## if referent is the first item
         for (FL.item.g in 1:no.group) {
@@ -3756,51 +3707,31 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is referent group
           for (a in (r+1):no.group) {  ## a is argument group
-            kr <<- FL.kr + (no.par.g*(r-1)) ## location of lx before r group
-            ka <<- FL.kr + (no.par.g*(a-1)) ## location of lx before a group
-
-          comp = comp + 1
-          if (Referent == 1) {
-            boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no] - bootcoef[, ka+Arg-factor.no]
-            samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no] - par.est[ka+Arg-factor.no]
-
-#$ print("Referent = 1")
-#$ print(par.est[kr+Arg-factor.no])
-#$ print(par.est[ka+Arg-factor.no])
-
-          } else {
-            if (Arg == 1) {
-              boot.dif.lx[,comp] <- 1/bootcoef[, kr+Referent-factor.no] - 1/bootcoef[, ka+Referent-factor.no]
-              samp.dif.lx[r,a] <- 1/par.est[kr+Referent-factor.no] - 1/par.est[ka+Referent-factor.no]
-
-#$ print("Arg = 1")
-#$ print(par.est[kr+Referent-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
-#            } else if (Referent > Arg) {
-#              boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no]/bootcoef[, kr+Referent-factor.no] -
-#                                    bootcoef[, ka+Arg-factor.no]/bootcoef[, ka+Referent-factor.no]
-#              samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no]/par.est[kr+Referent-factor.no] -
-#                                  par.est[ka+Arg-factor.no]/par.est[ka+Referent-factor.no]
-
-# print("Referent > Arg")
-# print(par.est[ka+Arg-factor.no])
-# print(par.est[ka+Referent-factor.no])
-
-            } else { # Arg != 1
-              boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no]/bootcoef[, kr+Referent-factor.no] -
-                                    bootcoef[, ka+Arg-factor.no]/bootcoef[, ka+Referent-factor.no]
-              samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no]/par.est[kr+Referent-factor.no] -
-                                  par.est[ka+Arg-factor.no]/par.est[ka+Referent-factor.no]
-
-#$ print("Referent < Arg")
-#$ print(par.est[ka+Arg-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
-            }  ## end if Arg
-          }  ## end if Referent
-        }  ## end loop a
-      }  ## end loop r
+            comp = comp + 1
+            if (Referent == 1) {
+              boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] - 
+                                    bootcoef[, paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]
+              samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] - 
+                                  par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]
+            } else {
+              if (Arg == no.markers[factor.no]) {
+                boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] - 
+                                      1/bootcoef[, paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)] 
+                samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", r)] - 
+                                    1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", a)] 
+              } else { # # Arg != no.markers[factor.no]
+                boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)]/
+                                      bootcoef[,paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] -
+                                      bootcoef[,paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]/
+                                      bootcoef[,paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)]
+                samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)]/
+                                    par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] -
+                                    par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]/
+                                    par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)]
+              }  ## end if Arg
+            }  ## end if Referent
+          }  ## end loop a
+        }  ## end loop r
 
 #$ print(samp.dif.lx)
 
@@ -4033,28 +3964,22 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         PMI.X.1 <- paste0("PMI.X <- '", "\n")
         for (j in 1:(no.waves)) {
           PMI.X.1 <- paste0(PMI.X.1, "  ",
-                          names.lv[no.factor*(j-1)+factor.no], " =~ ", paste0(Model.load[1, j, Rec.Model[Model.R]]), "*", names.ind[(FL.kr+1+no.items.g*(j-1))], " + ")
+                          names.lv[factor.no], "_T",j," =~ ", paste0(Model.load[1, j, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], "_T",j," + ")
           for (i in 2: (no.items[factor.no]-1)) {
-            PMI.X.1 <- paste0(PMI.X.1, Model.load[i, j, Rec.Model[Model.R]],"*", names.ind[FL.kr+i+no.items.g*(j-1)], " + ")
-          } ## end loop i
-          PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, j, Rec.Model[Model.R]],"*", names.ind[FL.kr+i+1+no.items.g*(j-1)], "\n")
-        }
+            PMI.X.1 <- paste0(PMI.X.1, Model.load[i, j, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i]], "_T",j," + ")
+          } ## end for i
+          PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, j, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i+1]], "_T",j, "\n")
+        } # end for j
         ## -- Create Residual Covariance -- ##
+
         PMI.X.1 <- paste0(PMI.X.1, "\n")
         for (i in 1:no.items[factor.no]) {
           for (j in 1:(no.waves - 1)) {
-            if (factor.no == 1) {
-              for (k in (j+1):no.waves) {
-                PMI.X.1 <- paste0(PMI.X.1, "  ", names.ind[no.items.g*(j-1)+i], " ~~ ", names.ind[no.items.g*(k-1)+i], "\n")
-              }
-            } else {
-              for (k in (j+1):no.waves) {
-                PMI.X.1 <- paste0(PMI.X.1, "  ", names.ind[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])], " ~~ ",
-                          names.ind[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
-              }
-            }
-          }
-        }
+            for (k in (j+1):no.waves) {
+              PMI.X.1 <- paste0(PMI.X.1, "  ", names.ind[i], "_T", j, " ~~ ", names.ind[i], "_T", k, "\n")
+            } # end for k
+          } # end for j
+        } # end for i
 
         PMI.X.1 <- paste0(PMI.X.1, "'", "\n")
         eval(parse(text = PMI.X.1))
@@ -4134,35 +4059,27 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {
         Recommend.Model <- matrix("PMI.Model.R <- '", 1)
-        Recommend.Model <- rbind(Recommend.Model, "\n")
       }
-      for (j in 1:(no.waves)) {
-        PMI <- paste0("   ", names.lv[no.factor*(j-1)+factor.no], " =~ ", paste0(R.Model[1,j], "*", names.ind[(FL.kr+1+no.items.g*(j-1))], " + "))
+      Recommend.Model <- rbind(Recommend.Model, "\n")
+
+      for (j in 1:no.waves) {
+        PMI <- paste0("   ", names.lv[factor.no], "_T",j," =~ ", paste0(Model.load[1, j, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], "_T",j," + ")
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI <- paste0(PMI, R.Model[i,j],"*", names.ind[FL.kr+i+no.items.g*(j-1)], " + ")
-        } ## end loop i
-        PMI <- paste0(PMI, R.Model[i+1,j],"*", names.ind[FL.kr+i+1+no.items.g*(j-1)], "\n")
+          PMI <- paste0(PMI, R.Model[i,j],"*", names.item[[factor.no]][[i]], "_T",j," + ")
+        } ## end for i
+        PMI <- paste0(PMI, R.Model[i+1,j],"*", names.item[[factor.no]][[i+1]], "_T",j, "\n")
       Recommend.Model <- rbind(Recommend.Model, PMI)
-      }
+      } # end for j 
 
       ## -- Create Residual Covariance -- ##
-      Recommend.Model <- rbind(Recommend.Model, "\n")
+      Recommend.Model <- rbind("\n", Recommend.Model, "\n")
       for (i in 1:no.items[factor.no]) {
         for (j in 1:(no.waves - 1)) {
-          if (factor.no == 1) {
-            for (k in (j+1):no.waves) {
-              PMI <- paste0("  ", names.ind[no.items.g*(j-1)+i], " ~~ ", names.ind[no.items.g*(k-1)+i], "\n")
-              Recommend.Model <- rbind(Recommend.Model, PMI)
-            } # end for k
-          } else {
-            for (k in (j+1):no.waves) {
-              PMI <- paste0("  ", names.ind[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])]," ~~",names.ind[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
-              Recommend.Model <- rbind(Recommend.Model, PMI)
-            } # end for k
-          } # end if (factor.no == 1)
+          for (k in (j+1):no.waves) {
+            Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.item[[factor.no]][[i]], "_T", j, " ~~ ", names.item[[factor.no]][[i]], "_T", k, "\n"))
+          } # end for k
         } # end for j
       } # end for i
-      Recommend.Model <- rbind(Recommend.Model, "\n")
 
     }  ## end if no.items[factor.no] > 2
 
@@ -4174,43 +4091,26 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
       for (j in 1:no.un.load) { R.Model[R.Model == un.load[j]] <- paste0("F", factor.no, "L", j) }  ## end loop j
 
       ## == Save Recommended Model (Recommend.Model) == ##
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", paste0(R.Model[1,1]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 1],"*", names.ind[(FL.kr+no.items[factor.no])])))
-      Recommend.Model <- rbind(Recommend.Model, paste0("level: 2"))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[no.factor+factor.no], " =~ ", paste0(R.Model[1,2]), "*", names.ind[(FL.kr+1)], " + "))
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("    ",paste0(R.Model[2, 2],"*", names.ind[(FL.kr+no.items[factor.no])])))
-
       if (factor.no == 1) {
         Recommend.Model <- matrix("PMI.Model.R <- '", 1)
-        Recommend.Model <- rbind(Recommend.Model, "\n")
       }
-      for (j in 1:(no.waves)) {
-        PMI <- paste0("   ", names.lv[no.factor*(j-1)+factor.no], " =~ ", paste0(R.Model[1,j], "*", names.ind[(FL.kr+1+no.items.g*(j-1))], " + "))
-        PMI <- paste0(PMI, R.Model[2,j],"*", names.ind[FL.kr+i+1+no.items.g*(j-1)], "\n")
+      Recommend.Model <- rbind(Recommend.Model, "\n")
+
+      for (j in 1:no.waves) {
+        PMI <- paste0("   ", names.lv[factor.no], "_T",j," =~ ", paste0(Model.load[1, j, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], "_T",j," + ")
+        PMI <- paste0(PMI, R.Model[2,j],"*", names.item[[factor.no]][[2]], "_T",j, "\n")
       Recommend.Model <- rbind(Recommend.Model, PMI)
-      }
+      } # end for j 
 
       ## -- Create Residual Covariance -- ##
-      Recommend.Model <- rbind(Recommend.Model, "\n")
+      Recommend.Model <- rbind("\n", Recommend.Model, "\n")
       for (i in 1:2) {
         for (j in 1:(no.waves - 1)) {
-          if (factor.no == 1) {
-            for (k in (j+1):no.waves) {
-              PMI <- paste0("  ", names.ind[no.items.g*(j-1)+i], " ~~ ", names.ind[no.items.g*(k-1)+i], "\n")
-              Recommend.Model <- rbind(Recommend.Model, PMI)
-            }
-          } else {
-            for (k in (j+1):no.waves) {
-              PMI <- paste0("  ", names.ind[no.items.g*(j-1)+i+sum(no.items[1:(factor.no-1)])]," ~~",names.ind[no.items.g*(k-1)+i+sum(no.items[1:(factor.no-1)])],"\n")
-              Recommend.Model <- rbind(Recommend.Model, PMI)
-            }
-          }
-        }
-      }
+          for (k in (j+1):no.waves) {
+            Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.item[[factor.no]][[i]], "_T", j, " ~~ ", names.item[[factor.no]][[i]], "_T", k, "\n"))
+          } # end for k
+        } # end for j
+      } # end for i
       Recommend.Model <- rbind(Recommend.Model, "\n")
 
     }  ## End (Models with 2 items)
@@ -4221,7 +4121,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   cat("\n", "## =====  Recommended Model  ===== ##", rep("\n", 2))
   cat(Recommend.Model)
-#  for (i in 1: nrow(Recommend.Model)) { cat(Recommend.Model[i], "\n") } ## end loop i
   cat(rep("\n", 2))
   cat("## ===== lavaan Outputs of PMI.Model.R ===== ##")
   cat(rep("\n", 2))
@@ -4233,8 +4132,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   cat("## =====  Recommended Model  ===== ##")
   cat("\n")
   cat(Recommend.Model)
-#  for (i in 1: nrow(Recommend.Model)) { cat(Recommend.Model[i], "\n") } ## end loop i
-
   cat(rep("\n",2), "## Run PMI.Model.R")
   cat(rep("\n",2), paste0("  PMI.Model.fit <- lavaan::sem(PMI.Model.R,"))
   cat("\n", paste0("    ", arg2_char, ","))
@@ -4250,7 +4147,6 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   sink()  ## Stop writing to file
 
-#  source("PMI.txt")
   PMI.Model.R <<- eval(parse(text=Recommend.Model))
 
   ## == Run PMI.Model.R == ##
@@ -4304,7 +4200,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   ## == Print Factor Loadings == ##
   Final.Model.FL <- matrix(0, sum(no.items), no.waves)
-  rownames(Final.Model.FL) <- paste0(" Item ", names.ind.or, "    ")
+  rownames(Final.Model.FL) <- paste0(" Item ", names.ind, "    ")
   colnames(Final.Model.FL) <- c(paste0("Time ", 1:no.group))
 
   Final.par.est <- lavaan::parameterEstimates(PMI.Model.fit)
@@ -4338,6 +4234,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 } ## End (Function LGCompareLoadings)
 
 # ==================== Finish Function "LGCompareLoadings" ==================== #
+
+
 
 
 
