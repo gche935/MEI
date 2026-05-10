@@ -245,14 +245,14 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL", correct.cfi=TRU
 #'
 CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1=0.05, Type1Adj="PFDR", BMSC="SRMR") {
 
-  Bootstrap = 0 # Number of bootstrap samples
-  model = Model.A
-  data.source = Example.A
-  Groups = "Region"
-  Type1 = 0.05
-  Type1Adj = "PFDR"
-  Cluster="NULL"
-  BMSC="SRMR" 
+#  Bootstrap = 0 # Number of bootstrap samples
+#  model = Model.A
+#  data.source = Example.A
+#  Groups = "Region"
+#  Type1 = 0.05
+#  Type1Adj = "PFDR"
+#  Cluster="NULL"
+#  BMSC="SRMR" 
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
@@ -2276,6 +2276,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
 
 
+
+
 # ==================== Create Function "CompareParameters" ==================== #
 #' Compare Defined Parameters Across Groups
 #'
@@ -2729,7 +2731,6 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 } ## End (Function CompareParameters)
 
 # ==================== Finish Function "CompareParameters" ==================== #
-
 
 
 
@@ -3396,7 +3397,6 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   cat(rep("\n",2),"The recommended model PMI.Model.R is saved in the file 'PMI.txt'", "\n")
 
 } ## End (Function MLCompareLoadings)
-
 
 # ==================== Finish Function "MLCompareLoadings" ==================== #
 
@@ -6507,7 +6507,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
 
 
-
 # ==================== Create Function "PAIRCompareMeans" ==================== #
 #' Scalar Invariance Test and Compare Latent Means in Congruence/Fit/Agreement Studies
 #'
@@ -7921,6 +7920,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 } ## End (Function PAIRCompareMeans)
 
 # ==================== Finish Function "PAIRCompareMeans" ==================== #
+
 
 
 
