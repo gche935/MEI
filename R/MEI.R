@@ -4469,21 +4469,6 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     colnames(TX.PMI) <- paste0(' Item ', 1:no.items[factor.no])
     rownames(TX.PMI) <- c(paste0("Time ", 1:no.group))
 
-    for (FL.item.g in 1:no.group) {
-      for (FL.item in 1:no.items[factor.no]) {
-        if (FL.item == no.markers[factor.no]) {
-          FL.PMI[FL.item.g, FL.item] <- 1
-          TX.PMI[FL.item.g, FL.item] <- 0
-        } else if (no.markers[factor.no] > FL.item) {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr], digits = 4), nsmall = 4, scientific = FALSE)
-          TX.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+TX.kr], digits = 4), nsmall = 4, scientific = FALSE)
-        } else {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-          TX.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+TX.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-        }  ## end if FL.item
-      }  ## end loop FL.item
-    }  ## end loop FL.item.g
-
     for (i in 1:no.group) {
       for (j in 1:no.items[factor.no]) {
         if (j == no.markers[factor.no]) {
