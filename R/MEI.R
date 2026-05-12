@@ -5109,7 +5109,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
         for (j in 1:(no.waves)) {
           Recommend.Model <- rbind(Recommend.Model, paste0("  ", names.lv[factor.no], "_T", j," =~ ", PSI.load[1, j], "*", names.item[[factor.no]][[1]], "_T",j," + "))
-          Recommend.Model <- rbind(Recommend.Model, paste0(PSI.load[2, j], "*", names.item[[factor.no]][[2]], "_T",j," + "))
+          Recommend.Model <- rbind(Recommend.Model, paste0(PSI.load[2, j], "*", names.item[[factor.no]][[2]], "_T", j, "\n"))
         } # end for j
 
         ## -- Create Residual Covariance -- ##
