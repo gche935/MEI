@@ -2,6 +2,7 @@
 
 export(CompareLoadings)
 export(CompareMeans)
+export(CompareParameters)
 export(Full_MEI)
 export(LGCompareLoadings)
 export(LGCompareMeans)

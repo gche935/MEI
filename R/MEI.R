@@ -252,7 +252,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #  Type1 = 0.05
 #  Type1Adj = "PFDR"
 #  Cluster="NULL"
-#  BMSC="SRMR" 
+#  BMSC="SRMR"
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
@@ -275,7 +275,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
   }
 
@@ -495,16 +495,16 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
           for (a in (r+1):no.group) {  ## a is argument group
           comp = comp + 1
           if (Referent == 1) {
-            boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] - 
+            boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] -
                                   bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]
-            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] - 
+            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] -
                                 par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]
           } else {
             if (Arg == no.markers[factor.no]) {
-              boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] - 
-                                    1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)] 
-              samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] - 
-                                  1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)] 
+              boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] -
+                                    1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)]
+              samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] -
+                                  1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)]
             } else { # Arg != no.markers[factor.no]
               boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)]/
                                     bootcoef[,paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] -
@@ -660,7 +660,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
   NI.level <- unique(flY[, no.group+1])
-  NIcombine <- NIcombine[NI.level, NI.level] 
+  NIcombine <- NIcombine[NI.level, NI.level]
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -1056,7 +1056,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
   }
 
@@ -1363,9 +1363,9 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
           for (a in (r+1):no.group) {  ## a is argument group
             comp = comp + 1
             if (Referent == no.markers[factor.no]) {
-              boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"~1.g", r)] - 
+              boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"~1.g", r)] -
                                     bootcoef[, paste0(names.item[[factor.no]][[Arg]],"~1.g", a)]
-              samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]], "~1.g",r)] - 
+              samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]], "~1.g",r)] -
                                   par.est[paste0(names.item[[factor.no]][[Arg]], "~1.g",a)]
 
             } else if (Referent != no.markers[factor.no]) {
@@ -2169,8 +2169,11 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #'
+
 #' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
-#'
+#' @keywords internal
+#' @export
+#' @examples
 #'
 #' ## Specify the measurement model - Model.A
 #' Model.A <- '
@@ -2664,7 +2667,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
   }
 
@@ -2848,16 +2851,16 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
         comp = 0
         comp = comp + 1
         if (Referent == 1) {
-          boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] - 
+          boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] -
                                 bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
-          samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] - 
+          samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] -
                               par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
         } else {
           if (Arg == no.markers[factor.no]) {
-            boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] - 
-                                  1/bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")] 
-            samp.dif.lx[1,2] <- 1/par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] - 
-                                1/par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")] 
+            boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
+                                  1/bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
+            samp.dif.lx[1,2] <- 1/par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
+                                1/par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
           } else { # Arg != no.markers[factor.no]
             boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])]/
                                   bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
@@ -2995,7 +2998,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   NIcombine <- table(flY[, 3], flY[, 4])
   NI.level <- unique(flY[, 3])
-  NIcombine <- NIcombine[NI.level, NI.level] 
+  NIcombine <- NIcombine[NI.level, NI.level]
 
   tempR <- unique(flYY[, 3])
 
@@ -3344,7 +3347,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
   }
 
@@ -3572,16 +3575,16 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
           for (a in (r+1):no.group) {  ## a is argument group
             comp = comp + 1
             if (Referent == 1) {
-              boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] - 
+              boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] -
                                     bootcoef[, paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]
-              samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] - 
+              samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)] -
                                   par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]
             } else {
               if (Arg == no.markers[factor.no]) {
-                boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] - 
-                                      1/bootcoef[, paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)] 
-                samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", r)] - 
-                                    1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", a)] 
+                boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] -
+                                      1/bootcoef[, paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)]
+                samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", r)] -
+                                    1/par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Referent]],"_T", a)]
               } else { # # Arg != no.markers[factor.no]
                 boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)]/
                                       bootcoef[,paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)] -
@@ -3742,7 +3745,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
   NI.level <- unique(flY[, no.group+1])
-  NIcombine <- NIcombine[NI.level, NI.level] 
+  NIcombine <- NIcombine[NI.level, NI.level]
 
   tempR <- unique(flYY[, no.group+1])
 
@@ -3932,7 +3935,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         } ## end for i
         PMI <- paste0(PMI, R.Model[i+1,j],"*", names.item[[factor.no]][[i+1]], "_T",j, "\n")
       Recommend.Model <- rbind(Recommend.Model, PMI)
-      } # end for j 
+      } # end for j
 
       ## -- Create Residual Covariance -- ##
       Recommend.Model <- rbind("\n", Recommend.Model, "\n")
@@ -3963,7 +3966,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
         PMI <- paste0("   ", names.lv[factor.no], "_T",j," =~ ", paste0(Model.load[1, j, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], "_T",j," + ")
         PMI <- paste0(PMI, R.Model[2,j],"*", names.item[[factor.no]][[2]], "_T",j, "\n")
       Recommend.Model <- rbind(Recommend.Model, PMI)
-      } # end for j 
+      } # end for j
 
       ## -- Create Residual Covariance -- ##
       Recommend.Model <- rbind("\n", Recommend.Model, "\n")
@@ -4182,7 +4185,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~")/no.waves } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- unique(parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"])
   }
 
@@ -4478,9 +4481,9 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
           for (a in (r+1):no.group) {  ## a is argument group
             comp = comp + 1
             if (Referent == no.markers[factor.no]) {
-              boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] - 
+              boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] -
                                     bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")]
-              samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] - 
+              samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] -
                                   par.est[paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")]
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")])
@@ -4500,7 +4503,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 #$ print(par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_T", a, "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)])
-              } else { ## (Arg != no.markers[factor.no]) 
+              } else { ## (Arg != no.markers[factor.no])
                 boot.dif.tx[,comp] <- (bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")]-
                                        bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)]*
                                        bootcoef[, paste0(names.item[[factor.no]][[Referent]],"_T", r, "~1")]/
@@ -4689,7 +4692,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
 #    NI.level <- unique(txY[, no.group+1])
-#    NIcombine <- NIcombine[NI.level, NI.level] 
+#    NIcombine <- NIcombine[NI.level, NI.level]
 
 
     tempR <- unique(txYY[, no.group+1])
@@ -5407,7 +5410,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
   }
 
@@ -5631,16 +5634,16 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
           for (a in (r+1):no.group) {  ## a is argument group
           comp = comp + 1
           if (Referent == 1) {
-            boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] - 
+            boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] -
                                   bootcoef[, paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]
-            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] - 
+            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] -
                                 par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]
           } else {
             if (Arg == no.markers[factor.no]) {
-               boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] - 
-                                     1/bootcoef[, paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")] 
-               samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] - 
-                                   1/par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")] 
+               boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] -
+                                     1/bootcoef[, paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")]
+               samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] -
+                                   1/par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")]
             } else { # Arg != no.markers[factor.no]
               boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")]/
                                     bootcoef[,paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] -
@@ -5795,7 +5798,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
   NIcombine <- table(flY[, no.group+1], flY[, no.group+2])
   NI.level <- unique(flY[, no.group+1])
-  NIcombine <- NIcombine[NI.level, NI.level] 
+  NIcombine <- NIcombine[NI.level, NI.level]
 
 
   tempR <- unique(flYY[, no.group+1])
@@ -6227,7 +6230,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~")/2 } ## end loop factor.no
 
   names.item <- list()
-  for (i in 1:no.factor) { 
+  for (i in 1:no.factor) {
     names.item[[i]] <- unique(parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"])
   }
 
@@ -6519,9 +6522,9 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
           for (a in (r+1):no.group) {  ## a is argument group
             comp = comp + 1
             if (Referent == no.markers[factor.no]) {
-                boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")] - 
+                boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")] -
                                       bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")]
-                samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")] - 
+                samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")] -
                                     par.est[paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")]
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")])
@@ -6541,7 +6544,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 #$ print(par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_G2", "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")])
-              } else { ## (Arg != no.markers[factor.no]) 
+              } else { ## (Arg != no.markers[factor.no])
                 boot.dif.tx[,comp] <- (bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")]-
                                        bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")]*
                                        bootcoef[, paste0(names.item[[factor.no]][[Referent]],"_G1", "~1")]/
@@ -6731,7 +6734,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
     NI.level <- unique(txY[, no.group+1])
-    NIcombine <- NIcombine[NI.level, NI.level] 
+    NIcombine <- NIcombine[NI.level, NI.level]
 
 
     tempR <- unique(txYY[, no.group+1])
