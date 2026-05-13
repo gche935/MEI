@@ -497,23 +497,14 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
           if (Referent == 1) {
             boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] - 
                                   bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]
-            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Arg]],".g", r)] - 
-                                par.est[paste0(names.lv[factor.no],"_T", "=~", names.item[[factor.no]][[Arg]],".g", a)]
-#$ print("Referent = 1")
-#$ print(par.est[kr+Arg-factor.no])
-#$ print(par.est[ka+Arg-factor.no])
-
+            samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)] - 
+                                par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]
           } else {
             if (Arg == no.markers[factor.no]) {
               boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] - 
                                     1/bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)] 
               samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] - 
                                   1/par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)] 
-
-#$ print("Arg = 1")
-#$ print(par.est[kr+Referent-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
             } else { # Arg != no.markers[factor.no]
               boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)]/
                                     bootcoef[,paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] -
@@ -523,24 +514,17 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
                                   par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)] -
                                   par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]/
                                   par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)]
-
-#$ print("Referent < Arg")
-#$ print(par.est[ka+Arg-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
             }  ## end if Arg
           }  ## end if Referent
-        }  ## end loop a
-      }  ## end loop r
+        }  ## end for a
+      }  ## end for r
 
 #$ print(samp.dif.lx)
-
 
       ## == Calculate Percentile Probability == ##
 
       F1.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
       pno_nipair <- 0  ## Set number of non-invariant pairs to zero
-
       comp = 0
       for (r in 1:(no.group-1)) {  ## r is the referent group
         for (a in (r+1):no.group) {  ## a is the argument
@@ -1040,25 +1024,41 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 #'
 CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstrap=0, Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR", correct.cfi=TRUE) {
 
-#  Bootstrap = 2000 # Number of bootstrap samples
+#  Bootstrap = 0 # Number of bootstrap samples
 #  model.PMI = PMI.Model.R
 #  data.source = Example.A
-#  Groups = "country"
+#  Groups = "Region"
 #  Type1 = 0.05
 #  Type1Adj = "PFDR"
 #  Cluster="NULL"
+#  BMSC="SRMR"
+#  correct.cfi=TRUE
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
   BMSC <- toupper(BMSC)
   match.arg(BMSC, c("CHISQUARE","CFI", "RMSEA", "SRMR"))
-
   if (is.logical(correct.cfi) == FALSE) stop("correct.cfi (corrected baseline model for calculating incremental fit indices) can only be TRUE or FALSE")
 
   arg1_char <- deparse(substitute(model.PMI))
   arg2_char <- deparse(substitute(data.source))
   arg3_char <- deparse(substitute(Groups))
   arg4_char <- deparse(substitute(Cluster))
+
+  parsed <- lavParseModelString(model.PMI, as.data.frame = TRUE)
+  parsed <- parsed[, c("lhs", "op", "rhs")]
+  parsed <- parsed[parsed$op == "=~",]
+  names.lv <- unique(parsed[,"lhs"])
+  names.ind <- unique(parsed[, "rhs"])
+  no.factor <- length(names.lv)
+  no.items.g <- length(names.ind) # number of items per group
+  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
+  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
+
+  names.item <- list()
+  for (i in 1:no.factor) { 
+    names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+  }
 
   ## Check for bootstrap sample number (Bootstrap) ##
   if (Bootstrap !=0) {
@@ -1115,24 +1115,20 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   parsed <- parsed[, c("lhs", "op", "rhs")]
   parsed <- parsed[parsed$op == "=~",]
 
-  names.lv <- unique(parsed[,"lhs"])
-  names.ind <- unique(parsed[, "rhs"])
-
-#  names.lv <- lavaan::lavNames(model.PMI, type = "lv")  # factor name
-  no.factor <- length(names.lv)  # number of factors
-#  names.ind <- lavaan::lavNames(model.PMI, type = "ov.ind")  # name of indicators
   temp <- lavaan::parameterEstimates(PMI.Model.fit)
-  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
-  for (factor.no in 1:no.factor) {
-    no.items[factor.no] <- sum(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~" & temp[,"group"] == 1)
-  } ## end loop factor.no
   no.markers <- matrix(1:no.factor, nrow = 1)  # location of marker items
   for (factor.no in 1:no.factor) {
     no.markers[factor.no] <- which(temp[,"lhs"] == names.lv[factor.no] & temp[,"op"] == "=~" & temp[,"est"] == 1 & temp[,"group"] == 1)
     if (factor.no > 1) {no.markers[factor.no] <- no.markers[factor.no] - sum(no.items[1:(factor.no-1)])}
   } ## end loop factor.no
+
   temp <- lavaan::parameterEstimates(PMI.Model.fit, remove.nonfree=TRUE)
   simvcov <- lavInspect(PMI.Model.fit, what="vcov")
+
+  ## -- Change labels to names -- ##
+  names(par.est) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
+  colnames(simvcov) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
+  rownames(simvcov) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
 
   ## Extract factor loadings and indicator intercepts ##
   ext <- c(which(temp[,"op"] == "=~" & temp[,"group"] == 1), which(temp[,"op"] == "~1" & temp[,"group"] == 1 & temp[,"lhs"] %in% names.ind))
@@ -1140,10 +1136,12 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     ext <- c(ext, which(temp[,"op"] == "=~" & temp[,"group"] == i), which(temp[,"op"] == "~1" & temp[,"group"] == i & temp[,"lhs"] %in% names.ind))
   }
 
+  ext <- which(temp[,"op"] == "=~" | temp[, "op"] == "~1")
   par.est <- par.est[ext]
   simvcov <- simvcov[ext,ext]
   no.par.g <- length(par.est)/no.group  # number of estimated parameters per group #
-  no.lx.g <- no.par.g/2 # number of estimated LX per group #
+  no.lx.g <- sum(temp[, "op"] == "=~")/no.group # number of estimated LX per group #
+
 
   cat(rep("\n", 3), "## ======= SCALAR INVARIANCE ANALYSIS ======= ##", rep("\n", 2))  ## print heading
 
@@ -1215,13 +1213,8 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
     alpha <- ERate[factor.no]
 
-    FL.kr <<- 1  ## location of first FL
-    if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
-    TX.kr <<- FL.kr + no.lx.g ## location of first TX
-
     txY <<- matrix(" ",1, (no.group+2))
     txYY <<- matrix(" ",1, (no.group+2))
-
     EP <<- 1  # estimated parameter number
 
     no.k <- no.items[factor.no]*no.group  # number of factor loadings in FL.PMI
@@ -1233,20 +1226,18 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     colnames(TX.PMI) <- paste0(' Item ', 1:no.items[factor.no])
     rownames(TX.PMI) <- lavaan::lavInspect(PMI.Model.fit, "group.label")
 
-    for (FL.item.g in 1:no.group) {
-      for (FL.item in 1:no.items[factor.no]) {
-        if (FL.item == no.markers[factor.no]) {
-          FL.PMI[FL.item.g, FL.item] <- 1
-          TX.PMI[FL.item.g, FL.item] <- 0
-        } else if (no.markers[factor.no] > FL.item) {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr], digits = 4), nsmall = 4, scientific = FALSE)
-          TX.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+TX.kr], digits = 4), nsmall = 4, scientific = FALSE)
+
+    for (i in 1:no.group) {
+      for (j in 1:no.items[factor.no]) {
+        if (j == no.markers[factor.no]) {
+          FL.PMI[i, j] <- 1
+          TX.PMI[i, j] <- 0
         } else {
-          FL.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+FL.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-          TX.PMI[FL.item.g, FL.item] <- format(round(par.est[no.par.g*(FL.item.g-1)+(FL.item-1)+TX.kr-1], digits = 4), nsmall = 4, scientific = FALSE)
-        }  ## end if FL.item
-      }  ## end loop FL.item
-    }  ## end loop FL.item.g
+          FL.PMI[i, j] <- format(round(par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[j]],".g",i)], digits=4), scientific = FALSE)
+          TX.PMI[i, j] <- format(round(par.est[paste0(names.item[[factor.no]][[j]],"~1", ".g", i)], digits=4), scientific = FALSE)
+        }  ## end if j
+      }  ## end loop j
+    }  ## end loop i
 
     class(FL.PMI) <- "numeric"
     class(TX.PMI) <- "numeric"
@@ -1294,33 +1285,27 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       colnames(FL) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(FL) <- lavaan::lavInspect(PMI.Model.fit, "group.label")
 
-      if (factor.no == 1) {
-        FL.kr <<- 1  ## location of first lx in last factor.no
-      } else {
-        FL.kr <<- sum(no.items[1:(factor.no-1)]) + 1  ## location of first lx in last factor.no
-      } # end if factor.no
-
 
       if (Referent == no.markers[factor.no]) {  ## if referent is the marker item
-        for (FL.item.g in 1:no.group) {
-          for (FL.item in 1:no.items[factor.no]) {
-            if (FL.item == Referent) {
-              FL[FL.item.g, FL.item] <- 1
+        for (i in 1:no.group) {
+          for (j in 1:no.items[factor.no]) {
+            if (j == Referent) {
+              FL[i, j] <- 1
             } else {
-              FL[FL.item.g, FL.item] <- FL.PMI[FL.item.g,FL.item]
-            }  ## end if FL.item
-          }  ## end loop FL.item
-        }  ## end loop FL.item.g
+              FL[i, j] <- FL.PMI[i, j]
+            }  ## end if j
+          }  ## end for j
+        }  ## end for i
       } else {  ## referent is not the marker item
-        for (FL.item.g in 1:no.group) {
-          for (FL.item in 1:no.items[factor.no]) {
-            if (FL.item == Referent) {
-              FL[FL.item.g, FL.item] <- 1
+        for (i in 1:no.group) {
+          for (j in 1:no.items[factor.no]) {
+            if (j == Referent) {
+              FL[i, j] <- 1
             } else {
-              FL[FL.item.g, FL.item] <- FL.PMI[FL.item.g,FL.item]/FL.PMI[FL.item.g,Referent]
-            }  ## end if FL.item
-          }  ## end loop FL.item
-        }  ## end loop FL.item.g
+              FL[i, j] <- FL.PMI[i, j]/FL.PMI[i, Referent]
+            }  ## end if j
+          }  ## end for j
+        }  ## end for i
       }  ## end if referent
 
 #$      cat(rep("\n", 3), "Factor Loadings ", rep("\n", 2))
@@ -1334,30 +1319,26 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       colnames(TX) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(TX) <- lavaan::lavInspect(PMI.Model.fit, "group.label")
 
-      TX.kr <<- no.par.g/2 ## number of parameters before first tx
-      if (factor.no > 1) {TX.kr <<- sum(no.items[1:(factor.no - 1)]) + TX.kr}
-
       if (Referent == no.markers[factor.no]) {  ## if referent is the marker item
-        for (TX.item.g in 1:no.group) {
-          for (TX.item in 1:no.items[factor.no]) {
-            if (TX.item == Referent) {
-              TX[TX.item.g, TX.item] <- 0
+        for (i in 1:no.group) {
+          for (j in 1:no.items[factor.no]) {
+            if (j == Referent) {
+              TX[i, j] <- 0
             } else {
-              TX[TX.item.g, TX.item] <- TX.PMI[TX.item.g, TX.item]
-            }  ## end if TX.item
-          }  ## end loop TX.item
-        }  ## end loop TX.item.g
+              TX[i, j] <- TX.PMI[i, j]
+            }  ## end if j
+          }  ## end for j
+        }  ## end for i
       } else {  ## referent is not the marker item
-        for (TX.item.g in 1:no.group) {
-          for (TX.item in 1:no.items[factor.no]) {
-            if (TX.item == Referent) {
-              TX[TX.item.g, TX.item] <- 0
+        for (i in 1:no.group) {
+          for (j in 1:no.items[factor.no]) {
+            if (j == Referent) {
+              TX[i, j] <- 0
             } else {
-              TX[TX.item.g, TX.item] <-
-                    TX.PMI[TX.item.g, TX.item] - FL.PMI[TX.item.g,TX.item]/FL.PMI[TX.item.g,Referent]*TX.PMI[TX.item.g, Referent]
-            }  ## end if TX.item
-          }  ## end loop TX.item
-        }  ## end loop TX.item.g
+              TX[i, j] <- TX.PMI[i, j] - FL.PMI[i, j]/FL.PMI[i, Referent]*TX.PMI[i, Referent]
+            }  ## end if j
+          }  ## end for j
+        }  ## end for i
       }  ## end if referent
 
 #$      cat(rep("\n", 3), "Intercepts ", rep("\n", 2))
@@ -1380,119 +1361,43 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is referent group
           for (a in (r+1):no.group) {  ## a is argument group
-            kr <<- TX.kr - no.lx.g + (no.par.g*(r-1)) ## location of lx before r group
-            ka <<- TX.kr - no.lx.g + (no.par.g*(a-1)) ## location of lx before a group
-            kr.tx <<- TX.kr + (no.par.g*(r-1))  ## location of tx before r group
-            ka.tx <<- TX.kr + (no.par.g*(a-1))  ## location of tx before a group
-
             comp = comp + 1
             if (Referent == no.markers[factor.no]) {
+              boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"~1.g", r)] - 
+                                    bootcoef[, paste0(names.item[[factor.no]][[Arg]],"~1.g", a)]
+              samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]], "~1.g",r)] - 
+                                  par.est[paste0(names.item[[factor.no]][[Arg]], "~1.g",a)]
+
+            } else if (Referent != no.markers[factor.no]) {
               if (Arg == no.markers[factor.no]) {
-                boot.dif.tx[,comp] <- bootcoef[, kr.tx+Arg-factor.no-1] - bootcoef[, ka.tx+Arg-factor.no-1]
-                samp.dif.tx[r,a] <-   par.est[kr.tx+Arg-factor.no-1] - par.est[ka.tx+Arg-factor.no-1]
+                boot.dif.tx[, comp] <- (-1*bootcoef[, paste0(names.item[[factor.no]][[Referent]], "~1.g", r)]/
+                                           bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)]) -
+                                       (-1*bootcoef[, paste0(names.item[[factor.no]][[Referent]], "~1.g", a)]/
+                                           bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)])
+                samp.dif.tx[r,a] <- (-1*par.est[paste0(names.item[[factor.no]][[Referent]], "~1.g", r)]/
+                                        par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)]) -
+                                    (-1*par.est[paste0(names.item[[factor.no]][[Referent]], "~1.g",a)]/
+                                        par.est[paste0(names.lv[factor.no],"=~", names.item[[factor.no]][[Referent]],".g", a)])
 
-#$ print("Referent = marker & Arg = marker")
-#$ print(par.est[kr.tx+Arg-factor.no-1])
-#$ print(par.est[ka.tx+Arg-factor.no-1])
-
-              } else if (Arg > no.markers[factor.no]) {
-                boot.dif.tx[,comp] <- bootcoef[, kr.tx+Arg-factor.no] - bootcoef[, ka.tx+Arg-factor.no]
-                samp.dif.tx[r,a] <-   par.est[kr.tx+Arg-factor.no] - par.est[ka.tx+Arg-factor.no]
-
-#$ print("Referent = marker & Arg > marker")
-#$ print(par.est[kr.tx+Arg-factor.no])
-#$ print(par.est[ka.tx+Arg-factor.no])
-
-               } else { # (Arg < no.markers[factor.no]
-
-                boot.dif.tx[,comp] <- bootcoef[, kr.tx+Arg-factor.no+1] - bootcoef[, ka.tx+Arg-factor.no+1]
-                samp.dif.tx[r,a] <-   par.est[kr.tx+Arg-factor.no+1] - par.est[ka.tx+Arg-factor.no+1]
-
-#$ print("Referent = marker & Arg < marker")
-#$ print(par.est[kr.tx+Arg-factor.no+1])
-#$ print(par.est[ka.tx+Arg-factor.no+1])
-
-               }
-
-            } else if (Referent > no.markers[factor.no]) {
-              if (Arg == no.markers[factor.no]) {
-                boot.dif.tx[,comp] <- (-1*bootcoef[,kr.tx+Referent-factor.no]/bootcoef[,kr+Referent-factor.no]) -
-                                      (-1*bootcoef[,ka.tx+Referent-factor.no]/bootcoef[,ka+Referent-factor.no])
-                samp.dif.tx[r,a] <- (-1*par.est[kr.tx+Referent-factor.no]/par.est[kr+Referent-factor.no]) -
-                                    (-1*par.est[ka.tx+Referent-factor.no]/par.est[ka+Referent-factor.no])
-
- #$ print("Referent > marker & Arg = marker")
- #$ print(par.est[ka.tx+Referent-factor.no])
- #$ print(par.est[ka+Referent-factor.no])
-
-              } else if (Arg > no.markers[factor.no]) {
-                boot.dif.tx[,comp] <-
-                           (bootcoef[,kr.tx+Arg-factor.no]-bootcoef[,kr+Arg-factor.no]*bootcoef[,kr.tx+Referent-factor.no]/bootcoef[,kr+Referent-factor.no]) -
-                           (bootcoef[,ka.tx+Arg-factor.no]-bootcoef[,ka+Arg-factor.no]*bootcoef[,ka.tx+Referent-factor.no]/bootcoef[,ka+Referent-factor.no])
-                samp.dif.tx[r,a] <-
-                                (par.est[kr.tx+Arg-factor.no]-par.est[kr+Arg-factor.no]*par.est[kr.tx+Referent-factor.no]/par.est[kr+Referent-factor.no]) -
-                                (par.est[ka.tx+Arg-factor.no]-par.est[ka+Arg-factor.no]*par.est[ka.tx+Referent-factor.no]/par.est[ka+Referent-factor.no])
- #$ print("Referent > marker & Arg > marker")
- #$ print(par.est[ka.tx+Arg-factor.no])
- #$ print(par.est[ka+Arg-factor.no])
- #$ print(par.est[ka.tx+Referent-factor.no])
- #$ print(par.est[ka+Referent-factor.no])
-
-              } else {
-                boot.dif.tx[,comp] <-
-                           (bootcoef[,kr.tx+Arg-factor.no+1]-bootcoef[,kr+Arg-factor.no+1]*bootcoef[,kr.tx+Referent-factor.no]/bootcoef[,kr+Referent-factor.no]) -
-                           (bootcoef[,ka.tx+Arg-factor.no+1]-bootcoef[,ka+Arg-factor.no+1]*bootcoef[,ka.tx+Referent-factor.no]/bootcoef[,ka+Referent-factor.no])
-               samp.dif.tx[r,a] <-
-                                (par.est[kr.tx+Arg-factor.no+1]-par.est[kr+Arg-factor.no+1]*par.est[kr.tx+Referent-factor.no]/par.est[kr+Referent-factor.no]) -
-                                (par.est[ka.tx+Arg-factor.no+1]-par.est[ka+Arg-factor.no+1]*par.est[ka.tx+Referent-factor.no]/par.est[ka+Referent-factor.no])
-
- #$ print("Referent > maker & Arg < marker")
- #$ print(par.est[ka.tx+Arg-factor.no+1])
- #$ print(par.est[ka+Arg-factor.no+1])
- #$ print(par.est[ka.tx+Referent-factor.no])
- #$ print(par.est[ka+Referent-factor.no])
-
-              }  ## end if Arg
-            } else { # (Referent < no.markers[factor.no])
-              if (nArg == no.markers[factor.no]) {
-                boot.dif.tx[,comp] <- (-1*bootcoef[,kr.tx+Referent-factor.no+1]/bootcoef[,kr+Referent-factor.no+1]) -
-                                      (-1*bootcoef[,ka.tx+Referent-factor.no+1]/bootcoef[,ka+Referent-factor.no+1])
-                samp.dif.tx[r,a] <- (-1*par.est[kr.tx+Referent-factor.no+1]/par.est[kr+Referent-factor.no+1]) -
-                                    (-1*par.est[ka.tx+Referent-factor.no+1]/par.est[ka+Referent-factor.no+1])
-
- #$ print("Referent < marker & Arg = marker")
- #$ print(par.est[ka.tx+Referent-factor.no+1])
- #$ print(par.est[ka+Referent-factor.no+1])
-
-              } else if (Arg > no.markers[factor.no]) {
-                boot.dif.tx[,comp] <-
-                           (bootcoef[,kr.tx+Arg-factor.no]-bootcoef[,kr+Arg-factor.no]*bootcoef[,kr.tx+Referent-factor.no+1]/bootcoef[,kr+Referent-factor.no+1]) -
-                           (bootcoef[,ka.tx+Arg-factor.no]-bootcoef[,ka+Arg-factor.no]*bootcoef[,ka.tx+Referent-factor.no+1]/bootcoef[,ka+Referent-factor.no+1])
-                samp.dif.tx[r,a] <-
-                                (par.est[kr.tx+Arg-factor.no]-par.est[kr+Arg-factor.no]*par.est[kr.tx+Referent-factor.no+1]/par.est[kr+Referent-factor.no+1]) -
-                                (par.est[ka.tx+Arg-factor.no]-par.est[ka+Arg-factor.no]*par.est[ka.tx+Referent-factor.no+1]/par.est[ka+Referent-factor.no+1])
- #$ print("Referent < marker & Arg > marker")
- #$ print(par.est[ka.tx+Arg-factor.no])
- #$ print(par.est[ka+Arg-factor.no])
- #$ print(par.est[ka.tx+Referent-factor.no+1])
- #$ print(par.est[ka+Referent-factor.no+1])
-
-              } else {
-                boot.dif.tx[,comp] <-
-                           (bootcoef[,kr.tx+Arg-factor.no+1]-bootcoef[,kr+Arg-factor.no+1]*bootcoef[,kr.tx+Referent-factor.no+1]/bootcoef[,kr+Referent-factor.no+1]) -
-                           (bootcoef[,ka.tx+Arg-factor.no+1]-bootcoef[,ka+Arg-factor.no+1]*bootcoef[,ka.tx+Referent-factor.no+1]/bootcoef[,ka+Referent-factor.no+1])
-               samp.dif.tx[r,a] <-
-                                (par.est[kr.tx+Arg-factor.no+1]-par.est[kr+Arg-factor.no+1]*par.est[kr.tx+Referent-factor.no+1]/par.est[kr+Referent-factor.no+1]) -
-                                (par.est[ka.tx+Arg-factor.no+1]-par.est[ka+Arg-factor.no+1]*par.est[ka.tx+Referent-factor.no+1]/par.est[ka+Referent-factor.no+1])
-
-#$ print("Referent < marker & Arg < marker")
-#$ print(par.est[ka.tx+Arg-factor.no+1])
-#$ print(par.est[ka+Arg-factor.no+1])
-#$ print(par.est[ka.tx+Referent-factor.no+1])
-#$ print(par.est[ka+Referent-factor.no+1])
+              } else if (Arg != no.markers[factor.no]) {
+                boot.dif.tx[,comp] <- (bootcoef[, paste0(names.item[[factor.no]][[Arg]], "~1.g",r)]-
+                                       bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)]*
+                                       bootcoef[, paste0(names.item[[factor.no]][[Referent]], "~1.g",r)]/
+                                       bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)]) -
+                                      (bootcoef[, paste0(names.item[[factor.no]][[Arg]], "~1.g",a)]-
+                                       bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]*
+                                       bootcoef[, paste0(names.item[[factor.no]][[Referent]], "~1.g",a)]/
+                                       bootcoef[, paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)])
+                samp.dif.tx[r,a] <- (par.est[paste0(names.item[[factor.no]][[Arg]],"~1.g",r)]-
+                                     par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", r)]*
+                                     par.est[paste0(names.item[[factor.no]][[Referent]], "~1.g",r)]/
+                                     par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", r)]) -
+                                    (par.est[paste0(names.item[[factor.no]][[Arg]],"~1.g",a)]-
+                                     par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Arg]],".g", a)]*
+                                     par.est[paste0(names.item[[factor.no]][[Referent]], "~1.g", a)]/
+                                     par.est[paste0(names.lv[factor.no], "=~", names.item[[factor.no]][[Referent]],".g", a)])
 
               }  ## end if nArg
-
             }  ## end if Referent
           }  ## end loop a
         }  ## end loop r
@@ -1663,8 +1568,6 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   if (is.matrix(txYY) == FALSE) { txYY <<- matrix(txYY, nrow=1) }
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
-    NI.level <- unique(txY[, no.group+1])
-    NIcombine <- NIcombine[NI.level, NI.level] 
 
     tempR <- unique(txYY[, no.group+1])
 
@@ -1684,7 +1587,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       ## expand.grid(Rset1, Rset2, Rset3, Rset4, Rset5 ...)
 
       temp.row <- eval(parse(text = paste0("expand.grid(", paste0(c("Rset"), 1:no.items[factor.no], collapse=","),")")))
-      if (aR == 1) {
+      if (R == 1) {
         Set.row <- temp.row
       } else {
         Set.row <- rbind(Set.row, temp.row)
@@ -1783,37 +1686,20 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
           } ## end if PSI.FL
         }  ## end loop FL.item
 
-        PMI.X.1 <- paste0("PSI.X <- '", names.lv[factor.no], " =~ ", "c(", paste0(PSI.load[1, ], collapse=","), ")*", names.ind[FL.kr], " + ","\n")
+
+        ## == Specify the partial metric invariance models (PMI.X) == ##
+
+        PMI.X.1 <- paste0("PSI.X <- '", names.lv[factor.no], " =~ ", "c(", paste0(PSI.load[1, ], collapse=","), ")*", names.item[[factor.no]][[1]], " + ","\n")
 
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI.X.1 <- paste0(PMI.X.1, "c(",paste0(PSI.load[i, ], collapse=","),")*", names.ind[FL.kr-1+i], " + ","\n")
+          PMI.X.1 <- paste0(PMI.X.1, "c(",paste0(PSI.load[i, ], collapse=","),")*", names.item[[factor.no]][[i]], " + ","\n")
         } ## end loop i
-        PMI.X.1 <- paste0(PMI.X.1, "c(",paste0(PSI.load[no.items[factor.no], ], collapse=","),")*", names.ind[(FL.kr + no.items[factor.no] - 1)],"\n")
-#@      eval(parse(text = PMI.X.1))
+        PMI.X.1 <- paste0(PMI.X.1, "c(",paste0(PSI.load[no.items[factor.no], ], collapse=","),")*", names.item[[factor.no]][[i+1]],"\n")
 
-
-#@        ## == Specify the partial scalar invariance models (PSI.X) == ##
-#@        PSI.X.1 <- PMI.X.1
-#@        for (i in 1: no.items[factor.no]) {
-#@          if (factor.no == 1) {
-#@            PSI.X.1 <- paste0(PSI.X.1, "   ", names.ind[i], " ~ c(", paste0(Model.load[i, , Rec.Model[Model.R]], collapse=","), ")*1","\n")
-#@          } else {
-#@          PSI.X.1 <-
-#@           paste0(PSI.X.1, "   ", names.ind[(sum(no.items[1:(factor.no-1)])+i)], " ~ c(", paste0(Model.load[i, , Rec.Model[Model.R]], collapse=","), ")*1","\n")
-#@          }
-#@        } ## end loop i
-#@        PSI.X.1 <- paste0(PSI.X.1, "'","\n")
-#@        eval(parse(text = PSI.X.1))
-
-
-        PSI.XX[Model.R] <- PMI.X.1
+        ## == Specify the partial scalar invariance models (PSI.X) == ##
+        PSI.XX[Model.R] <- paste0(PMI.X.1, "\n")
         for (i in 1: no.items[factor.no]) {
-          if (factor.no == 1) {
-            PSI.XX[Model.R] <- paste0(PSI.XX[Model.R], "   ", names.ind[i], " ~ c(", paste0(Model.load[i, , Rec.Model[Model.R]], collapse=","), ")*1","\n")
-          } else {
-            PSI.XX[Model.R] <-
-            paste0(PSI.XX[Model.R], "   ", names.ind[(sum(no.items[1:(factor.no-1)])+i)], " ~ c(",paste0(Model.load[i, ,Rec.Model[Model.R]], collapse=","), ")*1","\n")
-          }
+          PSI.XX[Model.R] <- paste0(PSI.XX[Model.R], "   ", names.item[[factor.no]][[i]], " ~ c(", paste0(Model.load[i, , Rec.Model[Model.R]], collapse=","), ")*1","\n")
         } ## end loop i
         PSI.XX[Model.R] <- paste0(PSI.XX[Model.R], "'","\n")
         eval(parse(text = PSI.XX[Model.R]))
@@ -1861,11 +1747,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         ## == Save Intercepts == ##
         for (G in 1: no.group) {
           temp.tx <- eval(parse(text = paste0("lavaan::lavInspect(PSI.X.fit, what='est')$'", group.names[G], "'$nu")))
-#@        if (factor.no == 1) {
           Rec.Model.TX[G, , Model.R] <- temp.tx[1: no.items[factor.no]]
-#@        } else {
-#@          Rec.Model.TX[G, , Model.R] <- temp.tx[(sum(no.items[1:(factor.no-1)])+1):(sum(no.items[1:(factor.no-1)])+no.items[factor.no])]
-#@        }
         }  ## end (for G)
       } ## end (for Model.R)
 
@@ -1922,7 +1804,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
             temp.fl <- unique(PSI.FL[,FL.item])
             for (temp.x in 1:length(temp.fl)) {
               for (FL.item.g in 1:no.group) {
-                if (PSI.FL[FL.item.g,FL.item] == temp.fl[temp.x]) {
+                if (PSI.FL[FL.item.g, FL.item] == temp.fl[temp.x]) {
                   PSI.load[FL.item,FL.item.g] <- paste0("F",factor.no,"L",FL.count)
                 }  ## end if
               }  ## end loop FL.item.g
@@ -1933,25 +1815,15 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
       R.Model <- Model.load[,,Rec.Model]  # Recommended Model
 
+      Recommend.Model <- rbind(Recommend.Model, "\n")
+
       ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {Recommend.Model <- matrix("PSI.Model.R <- '", 1)}
-      Recommend.Model <-
-        rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", "c(", paste0(PSI.load[1,], collapse=","), ")*", names.ind[FL.kr], " + ","\n"))
-      Recommend.Model[nrow(Recommend.Model)] <-
-          paste0(Recommend.Model[nrow(Recommend.Model)],"  c(",paste0(PSI.load[2, ], collapse=","),")*", names.ind[(FL.kr + no.items[factor.no] - 1)],"\n")
-      if (factor.no == 1) {
-        Recommend.Model[nrow(Recommend.Model)] <-
-          paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ind[1], " ~ c(",paste0(R.Model[1, ], collapse=","), ")*1","\n")
-        Recommend.Model[nrow(Recommend.Model)] <-
-          paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ind[2], " ~ c(",paste0(R.Model[2, ], collapse=","), ")*1","\n")
-      } else {
-        Recommend.Model[nrow(Recommend.Model)] <-
-          paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ind[(sum(no.items[1:(factor.no-1)])+1)], " ~ c(",paste0(R.Model[1, ], collapse=","), ")*1","\n")
-        Recommend.Model[nrow(Recommend.Model)] <-
-          paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.ind[(sum(no.items[1:(factor.no-1)])+2)], " ~ c(",paste0(R.Model[2, ], collapse=","), ")*1","\n")
-      } ## end if factor.no == 1
+      Recommend.Model <- rbind(Recommend.Model, paste0("  ", names.lv[factor.no], " =~ ", "c(", paste0(PSI.load[1,], collapse=","), ")*", names.item[[factor.no]][[1]], " + ","\n"))
+      Recommend.Model[nrow(Recommend.Model)] <- paste0(Recommend.Model[nrow(Recommend.Model)],"  c(",paste0(PSI.load[2, ], collapse=","),")*", names.item[[factor.no]][[2]],"\n")
+      Recommend.Model[nrow(Recommend.Model)] <- paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.item[[factor.no]][[1]], " ~ c(",paste0(R.Model[1, ], collapse=","), ")*1","\n")
+      Recommend.Model[nrow(Recommend.Model)] <- paste0(Recommend.Model[nrow(Recommend.Model)],"   ", names.item[[factor.no]][[2]], " ~ c(",paste0(R.Model[2, ], collapse=","), ")*1","\n")
     }  ## End (Models with 2 items)
-
   } ## End (loop factor.no)
 
 
@@ -2123,14 +1995,19 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   temp <- lavaan::parameterEstimates(PSI.Model.fit, remove.nonfree=TRUE)
   simvcov <- lavInspect(PSI.Model.fit, what="vcov")
 
-  ext <- c(which(temp[,"op"] == "~1" & temp[,"lhs"] == names.lv[1]))
-  if (factor.no > 1) {
-    for (i in 2: factor.no) { ext <- c(ext, which(temp[,"op"] == "~1" & temp[,"lhs"] == names.lv[i])) }
-  }
-  ext <- sort(ext)
-    par.est <- par.est[ext]
+  ## -- Change labels to names -- ##
+  names(par.est) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
+  colnames(simvcov) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
+  rownames(simvcov) <- paste0(temp[,"lhs"], temp[,"op"], temp[,"rhs"],".g", temp[,"group"])
+
+  parsed <- temp[temp$op == "=~",]
+  names.lm <- unique(parsed[,"lhs"])
+
+  ext <- c(which(temp$op %in% "~1" & temp$lhs %in% names.lm))
+  par.est <- par.est[ext]
   simvcov <- simvcov[ext,ext]
   no.lm.g <- length(names.lv)  # number of estimated latent means per group #
+
 
   cat(rep("\n", 3), "## ======= COMPARISON OF LATENT MEANS ======= ##", rep("\n", 2))  ## print heading
 
@@ -2179,16 +2056,15 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     comp = 0
     for (r in 1:(no.group-1)) {  ## r is referent group
       for (a in (r+1):no.group) {  ## a is argument group
-        kr.lm <<- no.lm.g*(r-1) ## location of lm before r group
-        ka.lm <<- no.lm.g*(a-1) ## location of lm before a group
         comp = comp + 1
-        boot.dif.lm[,comp] <- bootcoef[,(kr.lm+factor.no)] - bootcoef[,(ka.lm+factor.no)]
-        samp.dif.lm[r,a] <- par.est[kr.lm+factor.no] - par.est[ka.lm+factor.no]
-        samp.dif.lm[a,r] <- par.est[kr.lm+factor.no] - par.est[ka.lm+factor.no]
+        boot.dif.lm[,comp] <- bootcoef[, paste0(names.lv[factor.no], "~1.g", r)] - bootcoef[,paste0(names.lv[factor.no], "~1.g", a)]
+        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "~1.g", r)] - par.est[paste0(names.lv[factor.no], "~1.g", a)]
+        samp.dif.lm[a,r] <- par.est[paste0(names.lv[factor.no], "~1.g", r)] - par.est[paste0(names.lv[factor.no], "~1.g", a)]
       }  ## end loop a
     }  ## end loop r
     colnames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
     rownames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+
 
     ## == Calculate Percentile Probability == ##
     LM.comp.pp <- matrix(0, no.group, no.group)  ## Percentile Probability
@@ -2294,8 +2170,6 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 #' @param Bootstrap Number of bootstrap samples, must be between 500 and 5,000. If not specified, 1 million Monte Carlo simulated samples (default) will be used.
 #'
 #' @return Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
-#' @export
-#' @examples
 #'
 #'
 #' ## Specify the measurement model - Model.A
@@ -4527,13 +4401,6 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       colnames(FL) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(FL) <- c(paste0("Time ", 1:no.group))
 
-#      if (factor.no == 1) {
-#        FL.kr <<- 1  ## location of first lx in last factor.no
-#      } else {
-#        FL.kr <<- sum(no.items[1:(factor.no-1)]) + 1  ## location of first lx in last factor.no
-#      } # end if factor.no
-
-
       if (Referent == no.markers[factor.no]) {  ## if referent is the marker item
         for (i in 1:no.group) {
           for (j in 1:no.items[factor.no]) {
@@ -4566,9 +4433,6 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       TX <- matrix(1:no.k, nrow = no.group)  # intercept matrix
       colnames(TX) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(TX) <- c(paste0("Time ", 1:no.group))
-
-#      TX.kr <<- no.par.g/2 ## number of parameters before first tx
-#      if (factor.no > 1) {TX.kr <<- sum(no.items[1:(factor.no - 1)]) + TX.kr}
 
       if (Referent == no.markers[factor.no]) {  ## if referent is the marker item
         for (i in 1:no.group) {
@@ -4614,17 +4478,13 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
           for (a in (r+1):no.group) {  ## a is argument group
             comp = comp + 1
             if (Referent == no.markers[factor.no]) {
-#              if (Arg == no.markers[factor.no]) {
               boot.dif.tx[,comp] <- bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] - 
                                     bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")]
               samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")] - 
                                   par.est[paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")]
-
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")])
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")])
-
             } else if (Referent != no.markers[factor.no]) {
               if (Arg == no.markers[factor.no]) {
                 boot.dif.tx[, comp] <- (-1*bootcoef[, paste0(names.item[[factor.no]][[Referent]],"_T", r, "~1")]/
@@ -4635,15 +4495,12 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
                                         par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)]) -
                                     (-1*par.est[paste0(names.item[[factor.no]][[Referent]],"_T", a, "~1")]/
                                         par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)])
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_T", r, "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Referent]],"_T", r)])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_T", a, "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)])
-
               } else { ## (Arg != no.markers[factor.no]) 
-
                 boot.dif.tx[,comp] <- (bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_T", r, "~1")]-
                                        bootcoef[, paste0(names.lv[factor.no],"_T", r, "=~", names.item[[factor.no]][[Arg]],"_T", r)]*
                                        bootcoef[, paste0(names.item[[factor.no]][[Referent]],"_T", r, "~1")]/
@@ -4660,19 +4517,16 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
                                      par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)]*
                                      par.est[paste0(names.item[[factor.no]][[Referent]],"_T", a, "~1")]/
                                      par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)])
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_T", a, "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Arg]],"_T", a)])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_T", a, "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_T", a, "=~", names.item[[factor.no]][[Referent]],"_T", a)])
-
               }  ## end if nArg
             }  ## end if Referent
           }  ## end loop a
         }  ## end loop r
 
-#$ print(paste0("Referent = ", Referent, " Argument = ", nArg))
 #$ print(samp.dif.tx)
 
 
@@ -4834,8 +4688,8 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   if (is.matrix(txYY) == FALSE) { txYY <<- matrix(txYY, nrow=1) }
 
     NIcombine <- table(txY[, no.group+1], txY[, no.group+2])
-    NI.level <- unique(txY[, no.group+1])
-    NIcombine <- NIcombine[NI.level, NI.level] 
+#    NI.level <- unique(txY[, no.group+1])
+#    NIcombine <- NIcombine[NI.level, NI.level] 
 
 
     tempR <- unique(txYY[, no.group+1])
@@ -5584,13 +5438,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
   ## Finish creating Model.Long ##
 
 
-#  no.factor <- length(names.lv)  # number of factors per wave
-#  no.items.g <- length(names.ind) # number of items per wave
-#  no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
-#  for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
-
-
-
   ## ===== Run Configural Model ===== ##
 
   if (Cluster == "NULL") {
@@ -5711,9 +5558,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
     alpha <- ERate[factor.no]
 
-#    FL.kr <<- 1  ## location of first FL
-#    if (factor.no > 1) { FL.kr <<- sum(no.items[1:(factor.no-1)]) - factor.no + 2 }  ## location of first FL
-
     flY <<- matrix(" ",1, (no.group+2))
     flYY <<- matrix(" ",1, (no.group+2))
     EP <<- 1  # estimated parameter number
@@ -5742,13 +5586,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
       FL <- matrix(1:no.k, nrow = no.group)  # factor loading matrix
       colnames(FL) <- paste0(' Item ', 1:no.items[factor.no])
       rownames(FL) <- c(paste0("Group ", 1:no.group))
-
-
-#      if (factor.no == 1) {
-#        FL.kr <<- 0  ## location of lx in last factor.no
-#      } else {
-#        FL.kr <<- sum(no.items[1:(factor.no-1)])  ## location of lx in last factor.no
-#      } # end if factor.no
 
       if (Referent == 1) {  ## if referent is the first item
         for (FL.item.g in 1:no.group) {
@@ -5792,41 +5629,19 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
         comp = 0
         for (r in 1:(no.group-1)) {  ## r is referent group
           for (a in (r+1):no.group) {  ## a is argument group
-#            kr <<- FL.kr + (no.par.g*(r-1)) ## location of lx before r group
-#            ka <<- FL.kr + (no.par.g*(a-1)) ## location of lx before a group
-
           comp = comp + 1
           if (Referent == 1) {
-#            boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no] - bootcoef[, ka+Arg-factor.no]
-#            samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no] - par.est[ka+Arg-factor.no]
             boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] - 
                                   bootcoef[, paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]
             samp.dif.lx[r,a] <- par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")] - 
                                 par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]
-
-#$ print("Referent = 1")
-#$ print(par.est[kr+Arg-factor.no])
-#$ print(par.est[ka+Arg-factor.no])
-
           } else {
             if (Arg == no.markers[factor.no]) {
-#              boot.dif.lx[,comp] <- 1/bootcoef[, kr+Referent-factor.no] - 1/bootcoef[, ka+Referent-factor.no]
-#              samp.dif.lx[r,a] <- 1/par.est[kr+Referent-factor.no] - 1/par.est[ka+Referent-factor.no]
-
                boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] - 
                                      1/bootcoef[, paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")] 
                samp.dif.lx[r,a] <- 1/par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] - 
                                    1/par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")] 
-
-#$ print("Arg = 1")
-#$ print(par.est[kr+Referent-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
             } else { # Arg != no.markers[factor.no]
-#              boot.dif.lx[,comp] <- bootcoef[, kr+Arg-factor.no]/bootcoef[, kr+Referent-factor.no] -
-#                                    bootcoef[, ka+Arg-factor.no]/bootcoef[, ka+Referent-factor.no]
-#              samp.dif.lx[r,a] <- par.est[kr+Arg-factor.no]/par.est[kr+Referent-factor.no] -
-#                                  par.est[ka+Arg-factor.no]/par.est[ka+Referent-factor.no]
               boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")]/
                                     bootcoef[,paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] -
                                     bootcoef[,paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]/
@@ -5835,12 +5650,6 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
                                   par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")] -
                                   par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]/
                                   par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")]
-
-
-#$ print("Referent < Arg")
-#$ print(par.est[ka+Arg-factor.no])
-#$ print(par.est[ka+Referent-factor.no])
-
             }  ## end if Arg
           }  ## end if Referent
         }  ## end loop a
@@ -6714,11 +6523,9 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
                                       bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")]
                 samp.dif.tx[r,a] <- par.est[paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")] - 
                                     par.est[paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")]
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")])
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")])
-
             } else { # if (Referent > no.markers[factor.no]) {
               if (Arg == no.markers[factor.no]) {
                 boot.dif.tx[, comp] <- (-1*bootcoef[, paste0(names.item[[factor.no]][[Referent]],"_G1", "~1")]/
@@ -6729,13 +6536,11 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
                                         par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")]) -
                                     (-1*par.est[paste0(names.item[[factor.no]][[Referent]],"_G2", "~1")]/
                                         par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")])
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_G1", "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Referent]],"_G1")])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_G2", "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")])
-
               } else { ## (Arg != no.markers[factor.no]) 
                 boot.dif.tx[,comp] <- (bootcoef[, paste0(names.item[[factor.no]][[Arg]],"_G1", "~1")]-
                                        bootcoef[, paste0(names.lv[factor.no],"_G1=~", names.item[[factor.no]][[Arg]],"_G1")]*
@@ -6753,13 +6558,11 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
                                      par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")]*
                                      par.est[paste0(names.item[[factor.no]][[Referent]],"_G2", "~1")]/
                                      par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")])
-
 #$ print(paste0("Referent = ", Referent, " & Arg = ", Arg))
 #$ print(par.est[paste0(names.item[[factor.no]][[Arg]],"_G2", "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Arg]],"_G2")])
 #$ print(par.est[paste0(names.item[[factor.no]][[Referent]],"_G2", "~1")])
 #$ print(par.est[paste0(names.lv[factor.no],"_G2=~", names.item[[factor.no]][[Referent]],"_G2")])
-
               }  ## end if Arg
             }  ## end if Referent
           }  ## end loop a
