@@ -1,0 +1,8 @@
+bibentry(
+  bibtype = "Article",
+  title = "Assessing Partial Measurement Invariance in Cross-Group, Longitudinal, Congruence, and Multilevel Organizational Studies: Introducing the MEI Package in R",
+  author = c(person("Gordon", "Cheung"), person("Changya", "Hu"), person("Elena", "Zubielevitch")),
+  journal = "Organizational Research Methods",
+  year = "2026",
+  doi = "10.1177/10944281261449198"
+)
