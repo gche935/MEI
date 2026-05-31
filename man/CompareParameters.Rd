@@ -30,7 +30,7 @@ CompareParameters(
 Estimates and confidence intervals for defined parameters in each group and comparisons of defined parameters across groups.
 }
 \description{
-Conduct defined parameters across groups, e.g., direct, indirect and total effects.
+Compare defined parameters across groups, e.g., direct, indirect and total effects.
 }
 \details{
 Reference: Lau, R. S. & Cheung, G. W. (2012). Estimating and comparing specific mediation effects in complex latent variable models. Organizational Research Methods, 15, 3-16.
