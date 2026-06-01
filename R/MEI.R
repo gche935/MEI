@@ -5410,7 +5410,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 # Type1Adj = "PFDR"
 # BMSC="SRMR"
 
-  model <<- model
+  model <<- paste0("\n", "  ", model, "\n")
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
