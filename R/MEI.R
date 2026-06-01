@@ -3333,6 +3333,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 #  no.waves <- 3
 #  BMSC="SRMR"
 
+  model <- paste0("\n", "  ", model, "\n")
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
   BMSC <- toupper(BMSC)
@@ -3369,8 +3370,8 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
     TYPE = "MonteCarlo"
   } # end (Bootstrap != 0)
 
-  for (i in 1: no.factor) { model <- eval(parse(text = (paste0("sub('", names.lv[i],"', '", names.lv[i], "_T1', model, fixed=TRUE)", "\n")))) }
-  for (i in 1: no.items.g) { model <- eval(parse(text = (paste0("sub('", names.ind[i],"', '", names.ind[i], "_T1', model, fixed=TRUE)","\n")))) }
+  for (i in 1: no.factor) { model <- eval(parse(text = (paste0("sub('", names.lv[i],"', '", names.lv[i], "_T1', model, fixed=TRUE)")))) }
+  for (i in 1: no.items.g) { model <- eval(parse(text = (paste0("sub('", names.ind[i],"', '", names.ind[i], "_T1', model, fixed=TRUE)")))) }
 
 
   ## -- Create Model.Long with all waves and covary residuals -- ##
