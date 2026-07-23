@@ -381,7 +381,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -1183,7 +1183,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -2029,7 +2029,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -2074,12 +2074,27 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
       for (a in (r+1):no.group) {  ## a is argument group
         comp = comp + 1
         boot.dif.lm[,comp] <- bootcoef[, paste0(names.lv[factor.no], "~1.g", r)] - bootcoef[,paste0(names.lv[factor.no], "~1.g", a)]
-        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "~1.g", r)] - par.est[paste0(names.lv[factor.no], "~1.g", a)]
+        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "~1.g", a)] - par.est[paste0(names.lv[factor.no], "~1.g", r)]
         samp.dif.lm[a,r] <- par.est[paste0(names.lv[factor.no], "~1.g", r)] - par.est[paste0(names.lv[factor.no], "~1.g", a)]
       }  ## end loop a
     }  ## end loop r
     colnames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
     rownames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+
+
+    ## == Calculate Number of Invariant Intercepts == ##
+    LM.inv.tau <- matrix(0, no.group, no.group)
+    for (r in 1:(no.group-1)) {  ## r is the referent group
+      for (a in (r+1):no.group) {  ## a is the argument
+        if (factor.no == 1) {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+        } else {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+        }
+        LM.inv.tau[a,r] <- LM.inv.tau[r,a]
+      } # end for a
+    } # end for r 
 
 
     ## == Calculate Percentile Probability == ##
@@ -2126,6 +2141,20 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     cat("\n")
     #$      print(PCI[],quote=F, nsmall=4, scientific=FALSE)
 
+
+    # == Combine LM.comp.pp with LM.inv.tau == #
+    LM.comp.pp <- matrix(sprintf("%.4f", LM.comp.pp), nrow = nrow(LM.comp.pp))
+    LM.inv.tau <- matrix(sprintf("%.0f", LM.inv.tau), nrow = nrow(LM.inv.tau))
+    LM.comp.pp <- matrix(paste0(LM.comp.pp, " (", LM.inv.tau, ")  "), nrow = nrow(LM.comp.pp), ncol = ncol(LM.comp.pp))
+    colnames(LM.comp.pp) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+    rownames(LM.comp.pp) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+    diag(LM.comp.pp) <- ""
+
+    samp.dif.lm <- matrix(sprintf("%.4f", samp.dif.lm), nrow = nrow(samp.dif.lm))
+    diag(samp.dif.lm) <- ""
+    colnames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+    rownames(samp.dif.lm) <- paste0(" Group ", lavInspect(PMI.Model.fit, "group.label"), "   ")
+
     cat("\n")
     cat("## ===== Latent Variable: ", names.lv[factor.no], " ===== ##")
     cat("\n")
@@ -2151,13 +2180,18 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     cat("\n")
     cat("== Pairwise Difference in Latent Means ==")
     cat("\n")
-    print(format(round(samp.dif.lm,4)), quote=F)
+    print(format(samp.dif.lm, justify="right"), quote=F)
     cat("\n")
     cat("== p-values for pairwise comparisons ==")
     cat("\n")
-    print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
+    print(format(LM.comp.pp, justify="right"), quote=F)
     cat("\n")
-
+    cat("Note:", "\n")
+    cat("Numbers in parentheses are numbers of items with invariant intercepts.", "\n")
+    cat("There are ", no.items[factor.no], " items for this factor. Latent means should only be compared with at least ", ceiling((no.items[factor.no]+1)/2), " items with invariant intercepts.", "\n")
+    cat("There are ", choose(no.group, 2), "pairwise comparisons.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.05/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.05 with Bonferroni adjustment.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.01/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.01 with Bonferroni adjustment.", "\n")
   } ## End (factor.no loop)
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
@@ -2399,7 +2433,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -2618,7 +2652,10 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
     cat("\n")
     print(formatC(DP.comp.pp, digits=4, format="f"), quote=F)
     cat("\n")
-
+    cat("Note:", "\n")
+    cat("There are ", choose(no.group, 2), "pairwise comparisons.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.05/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.05 with Bonferroni adjustment.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.01/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.01 with Bonferroni adjustment.", "\n")
   } # end loop DP.no
 
 } ## End (Function CompareParameters)
@@ -2771,7 +2808,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   cat(rep("\n",2))
 
   ## Monte Carlo Simulation ##
-  mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+  mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
   bootcoef <- mcmc
   bootno <- nrow(mcmc)  # No. of successful simulated samples
   cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -3471,7 +3508,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -4301,7 +4338,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -5222,7 +5259,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -5267,13 +5304,28 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
       for (a in (r+1):no.group) {  ## a is argument group
         comp = comp + 1
         boot.dif.lm[,comp] <- bootcoef[, paste0(names.lv[factor.no], "_T", r, "~1")] - bootcoef[,paste0(names.lv[factor.no], "_T", a, "~1")]
-        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "_T", r, "~1")] - par.est[paste0(names.lv[factor.no], "_T", a, "~1")]
+        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "_T", a, "~1")] - par.est[paste0(names.lv[factor.no], "_T", r, "~1")]
         samp.dif.lm[a,r] <- par.est[paste0(names.lv[factor.no], "_T", r, "~1")] - par.est[paste0(names.lv[factor.no], "_T", a, "~1")]
       }  ## end loop a
     }  ## end loop r
 
     colnames(samp.dif.lm) <- c(paste0("Time ", 1:no.group))
     rownames(samp.dif.lm) <- c(paste0("Time ", 1:no.group))
+
+
+    ## == Calculate Number of Invariant Intercepts == ##
+    LM.inv.tau <- matrix(0, no.group, no.group)
+    for (r in 1:(no.group-1)) {  ## r is the referent group
+      for (a in (r+1):no.group) {  ## a is the argument
+        if (factor.no == 1) {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+        } else {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+        }
+        LM.inv.tau[a,r] <- LM.inv.tau[r,a]
+      } # end for a
+    } # end for r 
 
 
     ## == Calculate Percentile Probability == ##
@@ -5320,6 +5372,20 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     cat("\n")
 #$  print(PCI[],quote=F, nsmall=4, scientific=FALSE)
 
+    # == Combine LM.comp.pp with LM.inv.tau == #
+    LM.comp.pp <- matrix(sprintf("%.4f", LM.comp.pp), nrow = nrow(LM.comp.pp))
+    LM.inv.tau <- matrix(sprintf("%.0f", LM.inv.tau), nrow = nrow(LM.inv.tau))
+    LM.comp.pp <- matrix(paste0(LM.comp.pp, " (", LM.inv.tau, ")  "), nrow = nrow(LM.comp.pp), ncol = ncol(LM.comp.pp))
+    colnames(LM.comp.pp) <- c(paste0("Time ", 1:no.group))
+    rownames(LM.comp.pp) <- c(paste0("Time ", 1:no.group))
+    diag(LM.comp.pp) <- ""
+
+    samp.dif.lm <- matrix(sprintf("%.4f", samp.dif.lm), nrow = nrow(samp.dif.lm))
+    diag(samp.dif.lm) <- ""
+    colnames(samp.dif.lm) <- c(paste0("Time ", 1:no.group))
+    rownames(samp.dif.lm) <- c(paste0("Time ", 1:no.group))
+
+
     cat("\n")
     cat("## ===== Latent Variable: ", names.lv[factor.no], " ===== ##")
     cat("\n")
@@ -5345,12 +5411,18 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     cat("\n")
     cat("== Pairwise Difference in Latent Means ==")
     cat("\n")
-    print(format(round(samp.dif.lm,4)), quote=F)
+    print(format(samp.dif.lm, justify="right"), quote=F)
     cat("\n")
     cat("== p-values for pairwise comparisons ==")
     cat("\n")
-    print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
+    print(format(LM.comp.pp, justify="right"), quote=F)
     cat("\n")
+    cat("Note:", "\n")
+    cat("Numbers in parentheses are numbers of items with invariant intercepts.", "\n")
+    cat("There are ", no.items[factor.no], " items for this factor. Latent means should only be compared with at least ", ceiling((no.items[factor.no]+1)/2), " items with invariant intercepts.", "\n")
+    cat("There are ", choose(no.group, 2), "pairwise comparisons.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.05/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.05 with Bonferroni adjustment.", "\n")
+    cat("A critical p-value of", sprintf("%.4f", 0.01/choose(no.group, 2)), "is recommended for an overall Type I error rate of 0.01 with Bonferroni adjustment.", "\n")
 
   } # End (factor.no loop)
 
@@ -5545,7 +5617,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -6358,7 +6430,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -7261,7 +7333,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 
   if (TYPE == "MonteCarlo") {
 
-    mcmc <- MASS::mvrnorm(n=1000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 1,000,000 simulations
+    mcmc <- MASS::mvrnorm(n=2000000, mu=par.est, Sigma=simvcov, tol = 1e-6)  # Run 2,000,000 simulations
     bootcoef <- mcmc
     bootno <- nrow(mcmc)  # No. of successful simulated samples
     cat(paste0("Number of Successful Simulated Samples = ", bootno, "\n"))
@@ -7306,13 +7378,28 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
       for (a in (r+1):no.group) {  ## a is argument group
         comp = comp + 1
         boot.dif.lm[,comp] <- bootcoef[, paste0(names.lv[factor.no], "_G", r, "~1")] - bootcoef[,paste0(names.lv[factor.no], "_G", a, "~1")]
-        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "_G", r, "~1")] - par.est[paste0(names.lv[factor.no], "_G", a, "~1")]
+        samp.dif.lm[r,a] <- par.est[paste0(names.lv[factor.no], "_G", a, "~1")] - par.est[paste0(names.lv[factor.no], "_G", r, "~1")]
         samp.dif.lm[a,r] <- par.est[paste0(names.lv[factor.no], "_G", r, "~1")] - par.est[paste0(names.lv[factor.no], "_G", a, "~1")]
       }  ## end loop a
     }  ## end loop r
 
     colnames(samp.dif.lm) <- c(paste0("Group ", 1:no.group))
     rownames(samp.dif.lm) <- c(paste0("Group ", 1:no.group))
+
+
+    ## == Calculate Number of Invariant Intercepts == ##
+    LM.inv.tau <- matrix(0, no.group, no.group)
+    for (r in 1:(no.group-1)) {  ## r is the referent group
+      for (a in (r+1):no.group) {  ## a is the argument
+        if (factor.no == 1) {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+        } else {
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+        }
+        LM.inv.tau[a,r] <- LM.inv.tau[r,a]
+      } # end for a
+    } # end for r 
 
 
     ## == Calculate Percentile Probability == ##
@@ -7359,6 +7446,21 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
     cat("\n")
 #$  print(PCI[],quote=F, nsmall=4, scientific=FALSE)
 
+
+    # == Combine LM.comp.pp with LM.inv.tau == #
+    LM.comp.pp <- matrix(sprintf("%.4f", LM.comp.pp), nrow = nrow(LM.comp.pp))
+    LM.inv.tau <- matrix(sprintf("%.0f", LM.inv.tau), nrow = nrow(LM.inv.tau))
+    LM.comp.pp <- matrix(paste0(LM.comp.pp, " (", LM.inv.tau, ")  "), nrow = nrow(LM.comp.pp), ncol = ncol(LM.comp.pp))
+    colnames(LM.comp.pp) <- c(paste0("Group ", 1:no.group))
+    rownames(LM.comp.pp) <- c(paste0("Group ", 1:no.group))
+    diag(LM.comp.pp) <- ""
+
+    samp.dif.lm <- matrix(sprintf("%.4f", samp.dif.lm), nrow = nrow(samp.dif.lm))
+    diag(samp.dif.lm) <- ""
+    colnames(samp.dif.lm) <- c(paste0("Group ", 1:no.group))
+    rownames(samp.dif.lm) <- c(paste0("Group ", 1:no.group))
+
+
     cat("\n")
     cat("## ===== Latent Variable: ", names.lv[factor.no], " ===== ##")
     cat("\n")
@@ -7384,13 +7486,15 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
     cat("\n")
     cat("== Pairwise Difference in Latent Means ==")
     cat("\n")
-    print(format(round(samp.dif.lm, 4)), quote=F)
+    print(format(samp.dif.lm, justify="right"), quote=F)
     cat("\n")
     cat("== p-values for pairwise comparisons ==")
     cat("\n")
-    print(formatC(LM.comp.pp, digits=4, format="f"), quote=F)
+    print(format(LM.comp.pp, justify="right"), quote=F)
     cat("\n")
-
+    cat("Note:", "\n")
+    cat("Numbers in parentheses are numbers of items with invariant intercepts.", "\n")
+    cat("There are ", no.items[factor.no], " items for this factor. Latent means should only compare with at least ", ceiling((no.items[factor.no]+1)/2), " items with invariant intercepts.", "\n")
   } # End (factor.no loop)
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
