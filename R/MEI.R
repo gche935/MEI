@@ -2087,14 +2087,14 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     for (r in 1:(no.group-1)) {  ## r is the referent group
       for (a in (r+1):no.group) {  ## a is the argument
         if (factor.no == 1) {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6))
         } else {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
-                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) ==
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6))
         }
         LM.inv.tau[a,r] <- LM.inv.tau[r,a]
       } # end for a
-    } # end for r 
+    } # end for r
 
 
     ## == Calculate Percentile Probability == ##
@@ -5318,14 +5318,14 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     for (r in 1:(no.group-1)) {  ## r is the referent group
       for (a in (r+1):no.group) {  ## a is the argument
         if (factor.no == 1) {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6))
         } else {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
-                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) ==
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6))
         }
         LM.inv.tau[a,r] <- LM.inv.tau[r,a]
       } # end for a
-    } # end for r 
+    } # end for r
 
 
     ## == Calculate Percentile Probability == ##
@@ -7392,14 +7392,14 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
     for (r in 1:(no.group-1)) {  ## r is the referent group
       for (a in (r+1):no.group) {  ## a is the argument
         if (factor.no == 1) {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[1:no.items[factor.no],r],6) == round(Final.Model.TX[1:no.items[factor.no],a],6))
         } else {
-          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) == 
-                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6)) 
+          LM.inv.tau[r,a] <- sum(round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),r], 6) ==
+                                 round(Final.Model.TX[(sum(no.items[1:(factor.no-1)])+1):sum(no.items[1:factor.no]),a], 6))
         }
         LM.inv.tau[a,r] <- LM.inv.tau[r,a]
       } # end for a
-    } # end for r 
+    } # end for r
 
 
     ## == Calculate Percentile Probability == ##
@@ -7494,7 +7494,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
     cat("\n")
     cat("Note:", "\n")
     cat("Numbers in parentheses are numbers of items with invariant intercepts.", "\n")
-    cat("There are ", no.items[factor.no], " items for this factor. Latent means should only compare with at least ", ceiling((no.items[factor.no]+1)/2), " items with invariant intercepts.", "\n")
+    cat("There are ", no.items[factor.no], " items for this factor. Latent means should only be compared with at least ", ceiling((no.items[factor.no]+1)/2), " items with invariant intercepts.", "\n")
   } # End (factor.no loop)
 
   cat(rep("\n",2),"The recommended model PSI.Model.R is saved in the file 'PSI.txt'", "\n")
