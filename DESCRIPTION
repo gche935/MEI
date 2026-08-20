@@ -1,7 +1,7 @@
 Package: MEI
 Type: Package
 Title: Measurement Equivalence/Invariance Test
-Version: 1.0.13
+Version: 1.0.14
 Author: Gordon W. Cheung (gordon.cheung@auckland.ac.nz)
 Maintainer: Gordon W. Cheung <gordon.cheung@auckland.ac.nz>
 Description: Citation: Cheung, G. W., Hu, C., and Zubielevitch, E. (2026). Assessing partial measurement invariance in cross-group, longitudinal, congruence, and multilevel organizational studies: Introducing the MEI package in R. Organizational Research Methods. 

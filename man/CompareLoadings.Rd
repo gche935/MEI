@@ -40,6 +40,8 @@ Conduct a full metric invariance test and identify a partial metric invariance m
 }
 \details{
 Reference: Measurement Equivalence/Invariance Test based on "Cheung, G. W. & Lau, R. S. (2012).  A direct comparison approach for testing measurement invariance.  Organizational Research Methods, 15, 167-198."
+
+Reference for second-order factor ME/I Test: Cheung, G. W. (2008). Testing Equivalence in the Structure, Means, and Variances of Higher-Order Constructs With Structural Equation Modeling. Organizational Research Methods, 11(3), 593-613.
 }
 \examples{
 
