@@ -124,11 +124,11 @@ Full_MEI <- function(model, data.source, Groups, Cluster="NULL", correct.cfi=TRU
 
   ## == Print Outputs == ##
   cat(rep("\n",3), "CONFIGURAL INVARIANCE MODEL", rep("\n", 2))
-  print(lavaan::summary(Model.config, fit.measures=TRUE, standardized=TRUE, rsq=TRUE))
+  print(lavaan::summary(Model.config, fit_measures=TRUE, standardized=TRUE, rsq=TRUE))
   cat(rep("\n",3), "METRIC INVARIANCE MODEL", rep("\n", 2))
-  print(lavaan::summary(Model.metric, fit.measures=TRUE, standardized=TRUE, rsq=TRUE))
+  print(lavaan::summary(Model.metric, fit_measures=TRUE, standardized=TRUE, rsq=TRUE))
   cat(rep("\n", 3), "SCALAR INVARIANCE MODEL", rep("\n", 2))
-  print(lavaan::summary(Model.scalar, fit.measures=TRUE, standardized=TRUE, rsq=TRUE))
+  print(lavaan::summary(Model.scalar, fit_measures=TRUE, standardized=TRUE, rsq=TRUE))
   cat(rep("\n",3))
 
   ## == Compare fit indices across models == ##
@@ -360,7 +360,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
   }  # end Cluster
 
   ## Request summary outputs
-  #$   print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
+  #$   print(lavaan::summary(Model.config, fit_measures = T, standardized = T, rsq = T))
 
   Model.config <<- Model.config
 
@@ -827,7 +827,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
 
         ## == Request summary outputs == ##
-        #$      eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$      eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
         ## == Save fit indices == ##
         XX <- lavaan::fitMeasures(PMI.X.fit,
@@ -977,7 +977,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
     }  # end Cluster
 
     ## Request summary outputs
-    #? print(lavaan::summary(PMI.1st_order, fit.measure = T, standardized = T, rsq = T))
+    #? print(lavaan::summary(PMI.1st_order, fit_measures = T, standardized = T, rsq = T))
 
     PMI.1st_order <<- PMI.1st_order
 
@@ -1404,7 +1404,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
 
 
           ## == Request summary outputs == ##
-          #$        eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+          #$        eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
           ## == Save fit indices == ##
           XX <- lavaan::fitMeasures(PMI.X.fit,
@@ -1518,7 +1518,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
     cat("\n", "    estimator = 'MLR')")
 
     cat(rep("\n", 3), "## Request summary outputs")
-    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.2nd_order, fit.measure = T, standardized = T, rsq = T))"), "\n")
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.2nd_order, fit = TRUE, standardized = TRUE, rsq = TRUE))"), "\n")
 
     sink()  ## Stop writing to file
 
@@ -1546,7 +1546,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
                        estimator = 'MLR')"))
     } # end if Cluster
 
-    print(lavaan::summary(PMI.2nd_order, fit.measure = T, standardized = T, rsq = T))
+    print(lavaan::summary(PMI.2nd_order, fit_measures = T, standardized = T, rsq = T))
 
     XX <- sapply(list(Model.config, PMI.1st_order, PMI.2nd_order), lavaan::fitMeasures,
                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
@@ -1652,7 +1652,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
     cat("\n", "    estimator = 'MLR')")
 
     cat(rep("\n", 3), "## Request summary outputs")
-    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
     sink()  ## Stop writing to file
 
@@ -1683,7 +1683,7 @@ CompareLoadings <- function(model, data.source, Groups, Cluster="NULL", Bootstra
                        estimator = 'MLR')"))
     }
 
-    print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+    print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
     XX <- sapply(list(Model.config, PMI.Model.fit), lavaan::fitMeasures,
                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
@@ -1894,7 +1894,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
   }  # end Cluster
 
   ## Request summary outputs
-  #$  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  #$  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
   ## ===== End (Run model.PMI) ===== ##
 
@@ -2525,7 +2525,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
         }
 
         ## == Request summary outputs == ##
-        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
 
         ## == Save fit indices == ##
@@ -2695,7 +2695,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     }  # end Cluster
 
     ## Request summary outputs
-    #? print(lavaan::summary(PSI.1st_order, fit.measure = T, standardized = T, rsq = T))
+    #? print(lavaan::summary(PSI.1st_order, fit_measures = T, standardized = T, rsq = T))
 
     PSI.1st_order <<- PSI.1st_order
 
@@ -3291,7 +3291,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
           }
 
           ## == Request summary outputs == ##
-          #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+          #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
 
           ## == Save fit indices == ##
@@ -3434,7 +3434,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     cat("\n", "    estimator = 'MLR')")
 
     cat(rep("\n", 3), "## Request summary outputs")
-    cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.2nd_order, fit.measure = T, standardized = T, rsq = T))"), "\n")
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.2nd_order, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
     sink()  ## Stop writing to file
 
@@ -3463,7 +3463,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
                        estimator = 'MLR')"))
     }
 
-    print(lavaan::summary(PSI.2nd_order, fit.measure = T, standardized = T, rsq = T))
+    print(lavaan::summary(PSI.2nd_order, fit_measures = T, standardized = T, rsq = T))
 
     XX <- sapply(list(PMI.Model.fit, PSI.1st_order, PSI.2nd_order), lavaan::fitMeasures,
                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
@@ -3619,7 +3619,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
     cat("\n", "    estimator = 'MLR')")
 
     cat(rep("\n", 3), "## Request summary outputs")
-    cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
     sink()  ## Stop writing to file
 
@@ -3648,7 +3648,7 @@ CompareMeans <- function(model.PMI, data.source, Groups, Cluster="NULL", Bootstr
                        estimator = 'MLR')"))
     }
 
-    print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+    print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
     XX <- sapply(list(PMI.Model.fit, PSI.Model.fit), lavaan::fitMeasures,
                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
@@ -4040,7 +4040,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
   }  # end Cluster
 
   ## Request summary outputs
-  #$  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  #$  print(lavaan::summary(SEM.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
   ## ===== End (Run model.SEM) ===== ##
 
@@ -4149,7 +4149,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 
 
   ## Request summary outputs
-  print(lavaan::summary(SEM.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(SEM.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
   SEM.Model.fit <<- SEM.Model.fit # Save SEM.Model.fit to Global Environment
 
@@ -4481,8 +4481,30 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
-  print(lavaan::summary(Model.config, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(Model.config, fit_measures = T, standardized = T, rsq = T))
   cat("\n")
+
+  ## -- Estimate ICC -- ## 
+  est.var1 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 1)
+  est.var2 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 2)
+  unique_variables <- unique(est.var1[,"lhs"])
+  cluster.size <- mean(lavaan::lavInspect(Model.config, what = "cluster.size"))
+  no.variables <- length(unique_variables)
+  ICC <- matrix(0, nrow=no.variables, ncol=7)
+  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+  rownames(ICC) <- unique_variables
+  for (i in 1:no.variables) {
+    ICC[i, 1] <- unique_variables[i]
+    ICC[i, 2] <- unique_variables[i]
+    ICC[i, 3] <- unique_variables[i]
+    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
+    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
+  } # end (for i)
+  cat("\n", "## ----- ICC(1) and ICC(2) for configural invariance model ----- ##", "\n")
+  print(as.data.frame(ICC), row.names=F)
+  cat(rep("\n",2))
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -4883,10 +4905,10 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
                              verbose = FALSE, optim.method = 'em')"))
 
         ## == Request summary outputs == ##
-        #$ eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$ eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
         ## == Save fit indices == ##
-        XX <- lavaan::fitMeasures(PMI.X.fit, fit.measures=
+        XX <- lavaan::fitMeasures(PMI.X.fit, fit_measures=
                                     c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_within", "srmr_between", "aic", "bic"))
         MODFIT[Model.R,] <- format(round((XX), digits = 4), nsmall = 4, scientific = FALSE)
 
@@ -4996,20 +5018,43 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   cat(rep("\n", 3), "## Request summary outputs")
   cat(rep("\n", 3), paste0("  print('## ===== Final Model ===== ##')", "\n"))
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
   source('PMI.txt') ## Run the script
+
+
+  ## -- Estimate ICC -- ## 
+  est.var1 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 1)
+  est.var2 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 2)
+  unique_variables <- unique(est.var1[,"lhs"])
+  cluster.size <- mean(lavaan::lavInspect(PMI.Model.fit, what = "cluster.size"))
+  no.variables <- length(unique_variables)
+  ICC <- matrix(0, nrow=no.variables, ncol=7)
+  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+  rownames(ICC) <- unique_variables
+  for (i in 1:no.variables) {
+    ICC[i, 1] <- unique_variables[i]
+    ICC[i, 2] <- unique_variables[i]
+    ICC[i, 3] <- unique_variables[i]
+    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
+    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
+  } # end (for i)
+  cat("\n", "## ----- ICC(1) and ICC(2) for (partial) metric invariance model ----- ##", "\n")
+  print(as.data.frame(ICC), row.names=F)
+
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 10)
   colnames(DMODFIT) <-
     c("  chisq", "  df", "  pvalue", "  rmsea", "  cfi", "  tli", "  srmr_within", "  srmr_between", "  aic", "  bic")
   rownames(DMODFIT) <- c("Model.config", "PMI.Model.fit", "PMI.Model.fit - Model.config")
-  XX1 <- lavaan::fitMeasures(Model.config, fit.measures=
+  XX1 <- lavaan::fitMeasures(Model.config, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_within", "srmr_between", "aic", "bic"))
   DMODFIT[1,] <- XX1
-  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_within", "srmr_between", "aic", "bic"))
   DMODFIT[2,] <- XX2
 
@@ -5038,7 +5083,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
     ext <- c(which(Final.par.est[,"op"] == "=~" & Final.par.est[,"level"] == G))
     Final.Model.FL[, G] <- Final.par.est[ext, "est"]
   }
-  cat("\n")
+  cat(rep("\n",2))
   cat("## === Factor Loadings in Final Model === ##")
   cat("\n")
   print(round(Final.Model.FL, digits=4))
@@ -5177,7 +5222,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
-  print(lavaan::summary(Model.Long.config, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(Model.Long.config, fit_measures = T, standardized = T, rsq = T))
   #$  parameterEstimates(Model.Long.config)
   cat("\n")
 
@@ -5657,10 +5702,10 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
 
         ## == Request summary outputs == ##
-        #$     eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$     eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
         ## == Save fit indices == ##
-        XX <- lavaan::fitMeasures(PMI.X.fit, fit.measures=
+        XX <- lavaan::fitMeasures(PMI.X.fit, fit_measures=
                                     c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
         MODFIT[Model.R,] <- format(round((XX), digits = 4), nsmall = 4, scientific = FALSE)
 
@@ -5791,7 +5836,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
 
   cat(rep("\n", 3), "## Request summary outputs")
   cat(rep("\n", 3), paste0("  print('## ===== Final Model -- PMI.Model.R ===== ##')", "\n"))
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
 
@@ -5819,7 +5864,7 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
                        estimator = 'MLR')"))
   }
 
-  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
@@ -5827,10 +5872,10 @@ LGCompareLoadings <- function(model, data.source, Cluster="NULL", no.waves=3, Bo
   colnames(DMODFIT) <-
     c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.scaled", "  cfi.scaled", "  tli.scaled", "  srmr", "  aic", "  bic")
   rownames(DMODFIT) <- c("Model.config", "PMI.Model.fit", "PMI.Model.fit - Model.config")
-  XX1 <- lavaan::fitMeasures(Model.Long.config, fit.measures=
+  XX1 <- lavaan::fitMeasures(Model.Long.config, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[1,] <- XX1
-  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[2,] <- XX2
 
@@ -6003,7 +6048,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Partial Metric Invariance Model ===== ##", "\n")
-  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
   cat("\n")
 
   ## ===== End (Run model.PMI) ===== ##
@@ -6652,7 +6697,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
         }
 
         ## == Request summary outputs == ##
-        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
 
         ## == Save fit indices == ##
@@ -6831,7 +6876,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
   cat("\n", "    estimator = 'MLR')")
 
   cat(rep("\n", 3), "## Request summary outputs")
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+  cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
 
@@ -6860,14 +6905,14 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
                        estimator = 'MLR')"))
   }
 
-  print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 9)
   colnames(DMODFIT) <-
     c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.scaled", "  cfi.scaled", "  tli.scaled", "  srmr", "  aic", "  bic")
   rownames(DMODFIT) <- c("PMI.Model.fit", "PSI.Model.fit", "PSI.Model.fit - PMI.Model.fit")
-  XX1 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+  XX1 <- lavaan::fitMeasures(PMI.Model.fit, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[1,] <- XX1
 
@@ -6875,7 +6920,7 @@ LGCompareMeans <- function(model.PMI, data.source, Cluster="NULL", no.waves=3, B
     fitmeasures <- LGcorrected.cfi(PSI.object=PSI.Model.fit, data=data.source, cluster=Cluster)
     XX2 <- fitmeasures[c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_bentler", "aic", "bic")]
   } else {
-    XX2 <- lavaan::fitMeasures(PSI.Model.fit, fit.measures=
+    XX2 <- lavaan::fitMeasures(PSI.Model.fit, fit_measures=
                                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   } # end (if correct.cfi)
 
@@ -7285,7 +7330,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
-  print(lavaan::summary(Model.Long.config, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(Model.Long.config, fit_measures = T, standardized = T, rsq = T))
   #$  parameterEstimates(Model.Long.config)
   cat("\n")
 
@@ -7751,10 +7796,10 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
 
         ## == Request summary outputs == ##
-        #$     eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$     eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
         ## == Save fit indices == ##
-        XX <- lavaan::fitMeasures(PMI.X.fit, fit.measures=
+        XX <- lavaan::fitMeasures(PMI.X.fit, fit_measures=
                                     c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
         MODFIT[Model.R,] <- format(round((XX), digits = 4), nsmall = 4, scientific = FALSE)
 
@@ -7879,7 +7924,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
 
   cat(rep("\n", 3), "## Request summary outputs")
   cat(rep("\n", 3), paste0("  print('## ===== Final Model -- PMI.Model.R ===== ##')", "\n"))
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
 
@@ -7908,7 +7953,7 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
                        estimator = 'MLR')"))
   }
 
-  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
@@ -7916,10 +7961,10 @@ PAIRCompareLoadings <- function(model, data.source, Cluster="NULL", Bootstrap=0,
   colnames(DMODFIT) <-
     c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.scaled", "  cfi.scaled", "  tli.scaled", "  srmr", "  aic", "  bic")
   rownames(DMODFIT) <- c("Model.config", "PMI.Model.fit", "PMI.Model.fit - Model.config")
-  XX1 <- lavaan::fitMeasures(Model.Long.config, fit.measures=
+  XX1 <- lavaan::fitMeasures(Model.Long.config, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[1,] <- XX1
-  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+  XX2 <- lavaan::fitMeasures(PMI.Model.fit, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[2,] <- XX2
 
@@ -8098,7 +8143,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Partial Metric Invariance Model ===== ##", "\n")
-  print(lavaan::summary(PMI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))
   cat("\n")
 
   ## ===== End (Run model.PMI) ===== ##
@@ -8739,7 +8784,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
         }
 
         ## == Request summary outputs == ##
-        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit.measure = T, standardized = T, rsq = T))"))
+        #$      eval(parse(text = "print(lavaan::summary(PSI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
 
 
         ## == Save fit indices == ##
@@ -8909,7 +8954,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
   cat("\n", "    estimator = 'MLR')")
 
   cat(rep("\n", 3), "## Request summary outputs")
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))"), "\n")
+  cat(rep("\n", 2), paste0("  print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
 
   sink()  ## Stop writing to file
 
@@ -8937,14 +8982,14 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
                        estimator = 'MLR')"))
   }
 
-  print(lavaan::summary(PSI.Model.fit, fit.measure = T, standardized = T, rsq = T))
+  print(lavaan::summary(PSI.Model.fit, fit_measures = T, standardized = T, rsq = T))
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 9)
   colnames(DMODFIT) <-
     c("  chisq.scaled", "  df.scaled", "  pvalue.scaled", "  rmsea.scaled", "  cfi.scaled", "  tli.scaled", "  srmr", "  aic", "  bic")
   rownames(DMODFIT) <- c("PMI.Model.fit", "PSI.Model.fit", "PSI.Model.fit - PMI.Model.fit")
-  XX1 <- lavaan::fitMeasures(PMI.Model.fit, fit.measures=
+  XX1 <- lavaan::fitMeasures(PMI.Model.fit, fit_measures=
                                c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   DMODFIT[1,] <- XX1
 
@@ -8952,7 +8997,7 @@ PAIRCompareMeans <- function(model.PMI, data.source, Cluster="NULL", Bootstrap=0
     fitmeasures <- PAIRcorrected.cfi(PSI.object=PSI.Model.fit, data=data.source, cluster=Cluster)
     XX2 <- fitmeasures[c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_bentler", "aic", "bic")]
   } else {
-    XX2 <- lavaan::fitMeasures(PSI.Model.fit, fit.measures=
+    XX2 <- lavaan::fitMeasures(PSI.Model.fit, fit_measures=
                                  c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr", "aic", "bic"))
   } # end (if correct.cfi)
 
