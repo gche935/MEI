@@ -4484,27 +4484,27 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   print(lavaan::summary(Model.config, fit_measures = T, standardized = T, rsq = T))
   cat("\n")
 
-  ## -- Estimate ICC -- ## 
-  est.var1 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 1)
-  est.var2 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 2)
-  unique_variables <- unique(est.var1[,"lhs"])
-  cluster.size <- mean(lavaan::lavInspect(Model.config, what = "cluster.size"))
-  no.variables <- length(unique_variables)
-  ICC <- matrix(0, nrow=no.variables, ncol=7)
-  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
-  rownames(ICC) <- unique_variables
-  for (i in 1:no.variables) {
-    ICC[i, 1] <- unique_variables[i]
-    ICC[i, 2] <- unique_variables[i]
-    ICC[i, 3] <- unique_variables[i]
-    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
-    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
-    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
-    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
-  } # end (for i)
-  cat("\n", "## ----- ICC(1) and ICC(2) for configural invariance model ----- ##", "\n")
-  print(as.data.frame(ICC), row.names=F)
-  cat(rep("\n",2))
+#  ## -- Estimate ICC -- ##
+#  est.var1 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 1)
+#  est.var2 <- subset(lavaan::parameterEstimates(Model.config), op == "~~" & (lhs == rhs) & level == 2)
+#  unique_variables <- unique(est.var1[,"lhs"])
+#  cluster.size <- mean(lavaan::lavInspect(Model.config, what = "cluster.size"))
+#  no.variables <- length(unique_variables)
+#  ICC <- matrix(0, nrow=no.variables, ncol=7)
+#  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+#  rownames(ICC) <- unique_variables
+#  for (i in 1:no.variables) {
+#    ICC[i, 1] <- unique_variables[i]
+#    ICC[i, 2] <- unique_variables[i]
+#    ICC[i, 3] <- unique_variables[i]
+#    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+#    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+#    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
+#    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
+#  } # end (for i)
+#  cat("\n", "## ----- ICC(1) and ICC(2) for configural invariance model ----- ##", "\n")
+#  print(as.data.frame(ICC), row.names=F)
+#  cat(rep("\n",2))
 
   ## ===== End (Run Configural Model) ===== ##
 
@@ -5024,26 +5024,26 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   source('PMI.txt') ## Run the script
 
 
-  ## -- Estimate ICC -- ## 
-  est.var1 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 1)
-  est.var2 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 2)
-  unique_variables <- unique(est.var1[,"lhs"])
-  cluster.size <- mean(lavaan::lavInspect(PMI.Model.fit, what = "cluster.size"))
-  no.variables <- length(unique_variables)
-  ICC <- matrix(0, nrow=no.variables, ncol=7)
-  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
-  rownames(ICC) <- unique_variables
-  for (i in 1:no.variables) {
-    ICC[i, 1] <- unique_variables[i]
-    ICC[i, 2] <- unique_variables[i]
-    ICC[i, 3] <- unique_variables[i]
-    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
-    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
-    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
-    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
-  } # end (for i)
-  cat("\n", "## ----- ICC(1) and ICC(2) for (partial) metric invariance model ----- ##", "\n")
-  print(as.data.frame(ICC), row.names=F)
+#  ## -- Estimate ICC -- ##
+#  est.var1 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 1)
+#  est.var2 <- subset(lavaan::parameterEstimates(PMI.Model.fit), op == "~~" & (lhs == rhs) & level == 2)
+#  unique_variables <- unique(est.var1[,"lhs"])
+#  cluster.size <- mean(lavaan::lavInspect(PMI.Model.fit, what = "cluster.size"))
+#  no.variables <- length(unique_variables)
+#  ICC <- matrix(0, nrow=no.variables, ncol=7)
+#  colnames(ICC) <- c("Variable", "L1 label", "L2 label", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+#  rownames(ICC) <- unique_variables
+#  for (i in 1:no.variables) {
+#    ICC[i, 1] <- unique_variables[i]
+#    ICC[i, 2] <- unique_variables[i]
+#    ICC[i, 3] <- unique_variables[i]
+#    ICC[i, 4] <- round(est.var1[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+#    ICC[i, 5] <- round(est.var2[which(est.var1[, "lhs"] == ICC[i, 2]), "est"], digits=4)
+#    ICC[i, 6] <- round(as.numeric(ICC[i, 5]) / (as.numeric(ICC[i, 4]) + as.numeric(ICC[i, 5])), digits=4)
+#    ICC[i, 7] <- round(cluster.size*as.numeric(ICC[i, 6]) / (1 + (cluster.size-1)*as.numeric(ICC[i, 6])), digits=4)
+#  } # end (for i)
+#  cat("\n", "## ----- ICC(1) and ICC(2) for (partial) metric invariance model ----- ##", "\n")
+#  print(as.data.frame(ICC), row.names=F)
 
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
