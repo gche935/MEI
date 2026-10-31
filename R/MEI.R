@@ -4524,7 +4524,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
     ICC.lv[i, 4] <- sprintf("%.4f", round(var.lv.l1[i], 4))
     ICC.lv[i, 5] <- sprintf("%.4f", round(var.lv.l2[i], 4))
     ICC.lv[i, 6] <- sprintf("%.4f", round(var.lv.l2[i]/(var.lv.l1[i] + var.lv.l2[i]), 4))
-    ICC.lv[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.lv[i,4]) / (1 + (cluster.size-1)*as.numeric(ICC.lv[i,4])), 4))
+    ICC.lv[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.lv[i,6]) / (1 + (cluster.size-1)*as.numeric(ICC.lv[i,6])), 4))
     ICC.lv[i, 8] <- sprintf("%.4f", round(omega.l1, 4))
     ICC.lv[i, 9] <- sprintf("%.4f", round(omega.l2, 4))
   } # end (for i)
