@@ -4490,8 +4490,8 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   var.ov.l1 <- lavInspect(Model.config, what = "var")[[1]]
   var.ov.l2 <- lavInspect(Model.config, what = "var")[[2]]
   ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=5)
- 
-  colnames(ICC.ov) <- c("Variable", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+
+  colnames(ICC.ov) <- c("Variable", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)")
   rownames(ICC.ov) <- names(icc.ov)
   for (i in 1:length(icc.ov)) {
     ICC.ov[i, 1] <- names(icc.ov)[i]
@@ -4500,7 +4500,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
     ICC.ov[i, 4] <- sprintf("%.4f", round(icc.ov[i], 4))
     ICC.ov[i, 5] <- sprintf("%.4f", round(cluster.size*as.numeric(icc.ov[i]) / (1 + (cluster.size-1)*as.numeric(icc.ov[i])), 4))
   } # end (for i)
-  cat("\n", "## ----- ICC(1) and ICC(2) for configural invariance model ----- ##", "\n")
+  cat("\n", "## ----- ICC(1) and ICC(2) for Configural Invariance Model ----- ##", rep("\n",2))
   cat(" # --- Observed Variables --- #", "\n")
   print(as.data.frame(ICC.ov), row.names=F)
   cat(rep("\n",2))
@@ -4509,7 +4509,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   var.lv.l1 <- diag(lavInspect(Model.config, what = "cov_lv")[[1]])
   var.lv.l2 <- diag(lavInspect(Model.config, what = "cov_lv")[[2]])
   ICC.lv <- matrix(0, nrow=length(var.lv.l1), ncol=9)
-  colnames(ICC.lv) <- c("Variable", "Label(L1)", "Label(L2)", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)", "Reliability(L1)", "Reliability(L2)")
+  colnames(ICC.lv) <- c("Variable", "Label(L1)", "Label(L2)", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)", "Reliability(L1)", "Reliability(L2)")
   rownames(ICC.lv) <- names.lv
   for (i in 1:length(names.lv)) {
     lambda <- stdS[which(stdS[,"lhs"] == paste0(names.lv[i], "w") & stdS[,"op"] == "=~"), "est.std"]
@@ -5057,8 +5057,8 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   var.ov.l1 <- lavInspect(PMI.Model.fit, what = "var")[[1]]
   var.ov.l2 <- lavInspect(PMI.Model.fit, what = "var")[[2]]
   ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=5)
- 
-  colnames(ICC.ov) <- c("Variable", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
+
+  colnames(ICC.ov) <- c("Variable", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)")
   rownames(ICC.ov) <- names(icc.ov)
   for (i in 1:length(icc.ov)) {
     ICC.ov[i, 1] <- names(icc.ov)[i]
@@ -5067,7 +5067,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
     ICC.ov[i, 4] <- sprintf("%.4f", round(icc.ov[i], 4))
     ICC.ov[i, 5] <- sprintf("%.4f", round(cluster.size*as.numeric(icc.ov[i]) / (1 + (cluster.size-1)*as.numeric(icc.ov[i])), 4))
   } # end (for i)
-  cat("\n", "## ----- ICC(1) and ICC(2) for (Partial) metric invariance model ----- ##", "\n")
+  cat("\n", "## ----- ICC(1) and ICC(2) for (Partial) metric invariance model ----- ##", rep("\n",2))
   cat(" # --- Observed Variables --- #", "\n")
   print(as.data.frame(ICC.ov), row.names=F)
   cat(rep("\n",2))
@@ -5076,7 +5076,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   var.lv.l1 <- diag(lavInspect(PMI.Model.fit, what = "cov_lv")[[1]])
   var.lv.l2 <- diag(lavInspect(PMI.Model.fit, what = "cov_lv")[[2]])
   ICC.lv <- matrix(0, nrow=length(var.lv.l1), ncol=9)
-  colnames(ICC.lv) <- c("Variable", "Label(L1)", "Label(L2)", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)", "Reliability(L1)", "Reliability(L2)")
+  colnames(ICC.lv) <- c("Variable", "Label(L1)", "Label(L2)", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)", "Reliability(L1)", "Reliability(L2)")
   rownames(ICC.lv) <- names.lv
   for (i in 1:length(names.lv)) {
     lambda <- stdS[which(stdS[,"lhs"] == paste0(names.lv[i], "w") & stdS[,"op"] == "=~"), "est.std"]
