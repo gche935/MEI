@@ -7,6 +7,7 @@
 MLCompareLoadings(
   model,
   data.source,
+  mL2.variables = NULL,
   Cluster = "NULL",
   Type1 = 0.05,
   Type1Adj = "PFDR",
@@ -17,6 +18,8 @@ MLCompareLoadings(
 \item{model}{User-specified measurement model.}
 
 \item{data.source}{A data frame containing the observed variables used in the model.}
+
+\item{mL2.variables}{L2 variables represented by group mean (gm_X, manifest L2 variables) and L1 variables represented by group-mean centered variables (gmc_X). By default, latent L2 variables are partitioned into L1 and L2 by multilevel SEM.}
 
 \item{Cluster}{Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.}
 

@@ -1,3 +1,6 @@
+Version 0.1.16
+MLCompareLoadings() allows manifest L2 variables using MLM and latent L2 variables using MSEM.
+
 Version 0.1.15
 ICC(1), ICC(2), and the reliability at L1 and L2 of latent variables are added to MLCompareLoadings.
 

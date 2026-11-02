@@ -4411,6 +4411,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #'
 #' @param model User-specified measurement model.
 #' @param data.source A data frame containing the observed variables used in the model.
+#' @param mL2.variables L2 variables represented by group mean (gm_X, manifest L2 variables) and L1 variables represented by group-mean centered variables (gmc_X). By default, latent L2 variables are partitioned into L1 and L2 by multilevel SEM.
 #' @param Cluster Cluster variable for nested data. The Monte Carlo simulation method should be used for nested data.
 #' @param Type1 Overall Type I error rate (default is 0.05) for identifying non-invariant items in the List and Delete method.
 #' @param Type1Adj Adjustment of Type I error rate for multiple tests for each construct. Default is Possible False Discovery Rate (PFDR = Type I error rate/No. of freely estimated factor loadings/intercepts across all groups), can also use (BON)ferroni adjustment (Type I error rate/No. of pairwise comparisons), or "NULL".
@@ -4428,7 +4429,7 @@ CompareParameters <- function(model.PMI, model.PATH, data.source, Groups, Cluste
 #' ## ===== Compare Loadings ===== ##
 #' MLCompareLoadings(Model.D, Example.D, Cluster="ID", Type1=0.05, Type1Adj="NULL", BMSC="SRMR")
 #'
-MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
+MLCompareLoadings <- function(model, data.source, mL2.variables=NULL, Cluster="NULL", Type1 = 0.05, Type1Adj = "PFDR", BMSC="SRMR") {
 
   Type1Adj <- toupper(Type1Adj)
   match.arg(Type1Adj, c("PFDR","BON", "NULL"))
@@ -4442,30 +4443,48 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   parsed <- lavParseModelString(model, as.data.frame = TRUE)
   parsed <- parsed[, c("lhs", "op", "rhs")]
   parsed <- parsed[parsed$op == "=~",]
-  names.lv <- unique(parsed[,"lhs"])
+#  names.lv <- unique(parsed[,"lhs"])
+  names.lv <- lavaan::lavNames(model, "lv_regular")
+  names.ov <- lavaan::lavNames(model, "ov")
   names.ind <- unique(parsed[, "rhs"])
   no.factor <- length(names.lv)
   no.items.g <- length(names.ind) # number of items per level
   no.items <- matrix(1:no.factor, nrow = 1)  # number of items per factor
   for (factor.no in 1:no.factor) { no.items[factor.no] <- sum(parsed[,"lhs"] == names.lv[factor.no] & parsed[,"op"] == "=~") } ## end loop factor.no
 
-  names.item <- list()
+  names.item.l1 <- list()
+  names.item.l2 <- list()
   for (i in 1:no.factor) {
-    names.item[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+    names.item.l1[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+    names.item.l2[[i]] <- parsed[which(parsed[,"lhs"] == names.lv[i] & parsed[,"op"] == "=~"), "rhs"]
+    for (j in 1:no.items[i]) {
+      if (names.item.l1[[i]][[j]] %in% mL2.variables) names.item.l1[[i]][[j]] <- paste0("gmc_", names.item.l1[[i]][[j]])
+      if (names.item.l2[[i]][[j]] %in% mL2.variables) names.item.l2[[i]][[j]] <- paste0("gm_", names.item.l2[[i]][[j]])
+    } 
   }
+
+
+  # -- Create manifest Level 2 variables and group-mean centered variables -- #
+  if (is.null(mL2.variables) == FALSE) {
+    mL2a <- paste0("mL2.data <<- mL2(", arg2_char," , id = '", Cluster[1], "', mL2.variables)")
+    eval(parse(text = mL2a))
+    data.source <- mL2.data
+    arg2_char <<- deparse(substitute(mL2.data))
+  } # end (if mL2.variables)
+
 
   ## ===== Create Multilevel Model Model.ML.X ===== ##
   ML.X <- paste0("Model.ML.X <- '", "\n", "level: 1", "\n")
   for (i in 1:factor.no) {
     ML.X <- paste0(ML.X, names.lv[i], "w =~ ")
-    for (j in 1:no.items[i]) { ML.X <- paste0(ML.X, paste0(names.item[[i]][[j]], " + ")) } ## end loop j
-    ML.X <- paste0(ML.X, names.item[[i]][[j]],"\n")
+    for (j in 1:(no.items[i]-1)) { ML.X <- paste0(ML.X, paste0(names.item.l1[[i]][[j]], " + ")) } ## end loop j
+    ML.X <- paste0(ML.X, names.item.l1[[i]][[no.items[i]]],"\n")
   } # end loop i
   ML.X <- paste0(ML.X, paste0("\n", "level: 2", "\n"))
   for (i in 1: factor.no) {
     ML.X <- paste0(ML.X, names.lv[i], "b =~ ")
-    for (j in 1:no.items[i]) { ML.X <- paste0(ML.X, paste0(names.item[[i]][[j]], " + ")) } ## end loop j
-    ML.X <- paste0(ML.X, names.item[[i]][[j]],"\n")
+    for (j in 1:(no.items[i]-1)) { ML.X <- paste0(ML.X, paste0(names.item.l2[[i]][[j]], " + ")) } ## end loop j
+    ML.X <- paste0(ML.X, names.item.l2[[i]][[no.items[i]]],"\n")
   } # end loop i
   ML.X <- paste0(ML.X, "'","\n")
   eval(parse(text = ML.X))
@@ -4473,11 +4492,21 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   ## ===== Run Configural Model ===== ##
 
-  Model.config <- lavaan::sem(Model.ML.X,
+  Model.config <<- lavaan::sem(Model.ML.X,
                               data.source,
                               estimator = 'MLR',
                               cluster=Cluster,
-                              verbose = FALSE, optim.method = 'em')
+                              verbose = FALSE, 
+                              optim.method = 'em',
+                              em.args = list(max_iter=20000))
+
+  if (lavInspect(Model.config, "converged") == FALSE) {
+    Model.config <<- lavaan::sem(Model.ML.X,
+                                data.source,
+                                estimator = 'MLR',
+                                cluster=Cluster,
+                                verbose = FALSE)
+  }
 
   ## Request summary outputs
   cat(rep("\n", 2), "## ===== Configural Invariance Model ===== ##", "\n")
@@ -4489,16 +4518,32 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   icc.ov <- lavInspect(Model.config, what = "icc")
   var.ov.l1 <- lavInspect(Model.config, what = "var")[[1]]
   var.ov.l2 <- lavInspect(Model.config, what = "var")[[2]]
-  ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=5)
+  ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=7)
 
-  colnames(ICC.ov) <- c("Variable", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)")
+  colnames(ICC.ov) <- c("Variable", "Label(L1)", "Label(L2)", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
   rownames(ICC.ov) <- names(icc.ov)
   for (i in 1:length(icc.ov)) {
-    ICC.ov[i, 1] <- names(icc.ov)[i]
-    ICC.ov[i, 2] <- sprintf("%.4f", round(var.ov.l1[i], 4))
-    ICC.ov[i, 3] <- sprintf("%.4f", round(var.ov.l2[i], 4))
-    ICC.ov[i, 4] <- sprintf("%.4f", round(icc.ov[i], 4))
-    ICC.ov[i, 5] <- sprintf("%.4f", round(cluster.size*as.numeric(icc.ov[i]) / (1 + (cluster.size-1)*as.numeric(icc.ov[i])), 4))
+    ICC.ov[i, 1] <- names.ov[i]
+    if (ICC.ov[i, 1] %in% mL2.variables) {
+      ICC.ov[i, 2] <- paste0("gmc_", ICC.ov[i, 1])
+      ICC.ov[i, 3] <- paste0("gm_", ICC.ov[i, 1])
+      eval(parse(text = paste0("mlm_icc <- lmer(", names.ov[i], " ~ 1 + (1 | ", Cluster[1], "), data = data.source)")))
+      vc <- as.data.frame(VarCorr(mlm_icc))
+      var.l1 <- vc[vc$grp == "Residual", "vcov"]
+      var.l2 <- vc[vc$grp == Cluster[1], "vcov"]
+      icc_1 <- var.l2/(var.l1 + var.l2)
+      ICC.ov[i, 4] <- sprintf("%.4f", round(var.l1, 4))
+      ICC.ov[i, 5] <- sprintf("%.4f", round(var.l2, 4))
+      ICC.ov[i, 6] <- sprintf("%.4f", round(as.numeric(ICC.ov[i,5])/(as.numeric(ICC.ov[i,4]) + as.numeric(ICC.ov[i,5])), 4))
+      ICC.ov[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.ov[i,6]) / (1 + (cluster.size-1)*as.numeric(ICC.ov[i,6])), 4))
+    } else {
+      ICC.ov[i, 2] <- names(icc.ov)[i]
+      ICC.ov[i, 3] <- names(icc.ov)[i]
+      ICC.ov[i, 4] <- sprintf("%.4f", round(var.ov.l1[i], 4))
+      ICC.ov[i, 5] <- sprintf("%.4f", round(var.ov.l2[i], 4))
+      ICC.ov[i, 6] <- sprintf("%.4f", round(as.numeric(ICC.ov[i,5])/(as.numeric(ICC.ov[i,4]) + as.numeric(ICC.ov[i,5])), 4))
+      ICC.ov[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.ov[i,6]) / (1 + (cluster.size-1)*as.numeric(ICC.ov[i,6])), 4))
+    } # end (if ICC.ov[i, 1])
   } # end (for i)
   cat("\n", "## ----- ICC(1) and ICC(2) for Configural Invariance Model ----- ##", rep("\n",2))
   cat(" # --- Observed Variables --- #", "\n")
@@ -4531,8 +4576,6 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   cat(" # --- Latent Variables --- #", "\n")
   print(as.data.frame(ICC.lv), row.names=F)
   cat(rep("\n",2))
-
-
   ## ===== End (Run Configural Model) ===== ##
 
 
@@ -4609,14 +4652,14 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       if (j == no.markers[factor.no]) {
         FL.PMI[1, j] <- 1
       } else {
-        FL.PMI[1, j] <- format(round(par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[j]])], digits=4), scientific = FALSE)
+        FL.PMI[1, j] <- format(round(par.est[paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[j]])], digits=4), scientific = FALSE)
       }  ## end if j
     }  ## end loop j
     for (j in 1:no.items[factor.no]) {
       if (j == no.markers[factor.no]) {
         FL.PMI[2, j] <- 1
       } else {
-        FL.PMI[2, j] <- format(round(par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[j]],".l2")], digits=4), scientific = FALSE)
+        FL.PMI[2, j] <- format(round(par.est[paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[j]],".l2")], digits=4), scientific = FALSE)
       }  ## end if j
     }  ## end loop j
 
@@ -4673,25 +4716,25 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
         comp = 0
         comp = comp + 1
         if (Referent == 1) {
-          boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] -
-            bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
-          samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])] -
-            par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]
+          boot.dif.lx[,comp] <- bootcoef[, paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Arg]])] -
+            bootcoef[, paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Arg]],".l2")]
+          samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Arg]])] -
+            par.est[paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Arg]],".l2")]
         } else {
           if (Arg == no.markers[factor.no]) {
-            boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
-              1/bootcoef[, paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
-            samp.dif.lx[1,2] <- 1/par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
-              1/par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
+            boot.dif.lx[,comp] <- 1/bootcoef[, paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Referent]])] -
+              1/bootcoef[, paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Referent]],".l2")]
+            samp.dif.lx[1,2] <- 1/par.est[paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Referent]])] -
+              1/par.est[paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Referent]],".l2")]
           } else { # Arg != no.markers[factor.no]
-            boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])]/
-              bootcoef[,paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
-              bootcoef[,paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]/
-              bootcoef[,paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
-            samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Arg]])]/
-              par.est[paste0(names.lv[factor.no],"w=~", names.item[[factor.no]][[Referent]])] -
-              par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Arg]],".l2")]/
-              par.est[paste0(names.lv[factor.no],"b=~", names.item[[factor.no]][[Referent]],".l2")]
+            boot.dif.lx[,comp] <- bootcoef[,paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Arg]])]/
+              bootcoef[,paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Referent]])] -
+              bootcoef[,paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Arg]],".l2")]/
+              bootcoef[,paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Referent]],".l2")]
+            samp.dif.lx[1,2] <- par.est[paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Arg]])]/
+              par.est[paste0(names.lv[factor.no],"w=~", names.item.l1[[factor.no]][[Referent]])] -
+              par.est[paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Arg]],".l2")]/
+              par.est[paste0(names.lv[factor.no],"b=~", names.item.l2[[factor.no]][[Referent]],".l2")]
           }  ## end if Arg
         }  ## end if Referent
 
@@ -4903,20 +4946,20 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
         ## == Specify the partial metric invariance models (PMI.X) == ##
         PMI.X.1 <- paste0("PMI.X <- '", "\n", "level: 1", "\n",
-                          names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + ")
+                          names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item.l1[[factor.no]][[1]], " + ")
 
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 1, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i]], " + ")
+          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 1, Rec.Model[Model.R]],"*", names.item.l1[[factor.no]][[i]], " + ")
         } ## end loop i
-        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 1, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i+1]])
+        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 1, Rec.Model[Model.R]],"*", names.item.l1[[factor.no]][[i+1]])
 
         PMI.X.1 <- paste0(PMI.X.1, paste0("\n", "level: 2", "\n",
-                                          names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+                                          names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item.l2[[factor.no]][[1]], " + "))
 
         for (i in 2: (no.items[factor.no]-1)) {
-          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 2, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i]], " + ")
+          PMI.X.1 <- paste0(PMI.X.1, Model.load[i, 2, Rec.Model[Model.R]],"*", names.item.l2[[factor.no]][[i]], " + ")
         } ## end loop i
-        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 2, Rec.Model[Model.R]],"*", names.item[[factor.no]][[i+1]], " '")
+        PMI.X.1 <- paste0(PMI.X.1, Model.load[i+1, 2, Rec.Model[Model.R]],"*", names.item.l2[[factor.no]][[i+1]], " '")
 
         eval(parse(text = PMI.X.1))
 
@@ -4927,9 +4970,19 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
                              estimator = 'MLR',
  #                            marker.int.zero = TRUE,
  #                            meanstructure = T,
-                            information = 'observed',
+                             information = 'observed',
                              cluster = Cluster,
                              verbose = FALSE, optim.method = 'em')"))
+
+        if (lavInspect(PMI.X.fit, "converged") == FALSE) {
+          eval(parse(text=   "PMI.X.fit <- lavaan::sem(PMI.X,
+                             data.source,
+                             auto.fix.first = FALSE,
+                             estimator = 'MLR',
+                             information = 'observed',
+                             cluster = Cluster,
+                             verbose = FALSE)"))
+        } # end if
 
         ## == Request summary outputs == ##
         #$ eval(parse(text = "print(lavaan::summary(PMI.X.fit, fit_measures = T, standardized = T, rsq = T))"))
@@ -4985,20 +5038,20 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {Recommend.Model <- matrix("PMI.Model.R <- '", 1)}
       Recommend.Model <- rbind(Recommend.Model, paste0("level: 1", "\n"))
-      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item.l1[[factor.no]][[1]], " + "))
 
       for (i in 2: (no.items[factor.no]-1)) {
-        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,1],"*", names.item[[factor.no]][[i]]," + ")))
+        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,1],"*", names.item.l1[[factor.no]][[i]]," + ")))
       }  ## end loop i
-      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,1],"*", names.item[[factor.no]][[i+1]], "\n")))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,1],"*", names.item.l1[[factor.no]][[i+1]], "\n")))
 
       Recommend.Model <- rbind(Recommend.Model, paste0("level: 2", "\n"))
-      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item.l2[[factor.no]][[1]], " + "))
 
       for (i in 2: (no.items[factor.no]-1)) {
-        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,2],"*", names.item[[factor.no]][[i]]," + ")))
+        Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i,2],"*", names.item.l2[[factor.no]][[i]]," + ")))
       }  ## end loop i
-      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,2],"*", names.item[[factor.no]][[i+1]], "\n")))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[i+1,2],"*", names.item.l2[[factor.no]][[i+1]], "\n")))
 
     }  ## end if no.items[factor.no] > 2
 
@@ -5011,11 +5064,11 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
       ## == Save Recommended Model (Recommend.Model) == ##
       if (factor.no == 1) {Recommend.Model <- matrix("PMI.Model.R <- '", 1)}
       Recommend.Model <- rbind(Recommend.Model, paste0("level: 1", "\n"))
-      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
-      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,1],"*", names.item[[factor.no]][[2]], "\n")))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "w =~ ", paste0(Model.load[1, 1, Rec.Model[Model.R]]), "*", names.item.l1[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,1],"*", names.item.l1[[factor.no]][[2]], "\n")))
       Recommend.Model <- rbind(Recommend.Model, paste0("level: 2", "\n"))
-      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item[[factor.no]][[1]], " + "))
-      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,2],"*", names.item[[factor.no]][[2]], "\n")))
+      Recommend.Model <- rbind(Recommend.Model, paste0("   ", names.lv[factor.no], "b =~ ", paste0(Model.load[1, 2, Rec.Model[Model.R]]), "*", names.item.l2[[factor.no]][[1]], " + "))
+      Recommend.Model <- rbind(Recommend.Model, paste0(paste0(R.Model[2,2],"*", names.item.l2[[factor.no]][[2]], "\n")))
 
     }  ## End (Models with 2 items)
 
@@ -5036,19 +5089,60 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
 
   cat(rep("\n",2), "## Run PMI.Model.R")
   cat(rep("\n",2), paste0("  PMI.Model.fit <- lavaan::sem(PMI.Model.R,"))
-  cat("\n", paste0("    ", arg2_char, ","))
+  cat("\n", "    ", arg2_char, ",")
   cat("\n", "    auto.fix.first = FALSE,")
   cat("\n", "    information = 'observed',")
   cat("\n", paste0("    cluster = ", arg4_char,","))
   cat("\n", "    estimator = 'MLR',")
   cat("\n", "    verbose = FALSE, optim.method = 'em')")
 
-  cat(rep("\n", 3), "## Request summary outputs")
-  cat(rep("\n", 3), paste0("  print('## ===== Final Model ===== ##')", "\n"))
-  cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
-
   sink()  ## Stop writing to file
   source('PMI.txt') ## Run the script
+
+  if (lavInspect(PMI.Model.fit, "converged") == FALSE) {
+    sink('PMI.txt')
+
+    cat("## =====  Recommended Model  ===== ##")
+    cat("\n")
+    for (i in 1: nrow(Recommend.Model)) { cat(Recommend.Model[i], "\n") } ## end loop i
+
+    cat(rep("\n",2), "## Run PMI.Model.R")
+    cat(rep("\n",2), paste0("  PMI.Model.fit <- lavaan::sem(PMI.Model.R,"))
+    cat("\n", "    ", arg2_char, ",")
+    cat("\n", "    auto.fix.first = FALSE,")
+    cat("\n", "    information = 'observed',")
+    cat("\n", paste0("    cluster = ", arg4_char,","))
+    cat("\n", "    estimator = 'MLR',")
+    cat("\n", "    verbose = FALSE)")
+    cat(rep("\n",3), "## ----- Request summary outputs ----- ##")
+    cat(rep("\n", 3), paste0("  print('## ===== Final Model ===== ##')", "\n"))
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
+
+    sink()  ## Stop writing to file
+
+    source('PMI.txt') ## Run the script
+  } else {
+    sink('PMI.txt')
+
+    cat("## =====  Recommended Model  ===== ##")
+    cat("\n")
+    for (i in 1: nrow(Recommend.Model)) { cat(Recommend.Model[i], "\n") } ## end loop i
+
+    cat(rep("\n",2), "## Run PMI.Model.R")
+    cat(rep("\n",2), paste0("  PMI.Model.fit <- lavaan::sem(PMI.Model.R,"))
+    cat("\n", "    ", arg2_char, ",")
+    cat("\n", "    auto.fix.first = FALSE,")
+    cat("\n", "    information = 'observed',")
+    cat("\n", paste0("    cluster = ", arg4_char,","))
+    cat("\n", "    estimator = 'MLR',")
+    cat("\n", "    verbose = FALSE, optim.method = 'em')")
+    cat(rep("\n",3), "## ----- Request summary outputs ----- ##")
+    cat(rep("\n", 3), paste0("  print('## ===== Final Model ===== ##')", "\n"))
+    cat(rep("\n", 2), paste0("  print(lavaan::summary(PMI.Model.fit, fit_measures = T, standardized = T, rsq = T))"), "\n")
+    sink()  ## Stop writing to file
+
+  } # end if
+
 
 
   ## -- Estimate ICC -- ##
@@ -5056,18 +5150,34 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   icc.ov <- lavInspect(PMI.Model.fit, what = "icc")
   var.ov.l1 <- lavInspect(PMI.Model.fit, what = "var")[[1]]
   var.ov.l2 <- lavInspect(PMI.Model.fit, what = "var")[[2]]
-  ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=5)
+  ICC.ov <- matrix(0, nrow=length(icc.ov), ncol=7)
 
-  colnames(ICC.ov) <- c("Variable", "Variance(L1)", "Variance(L2)", "ICC(1)", "ICC(2)")
+  colnames(ICC.ov) <- c("Variable", "Label(L1)", "Label(L2)", "L1 variance", "L2 variance", "ICC(1)", "ICC(2)")
   rownames(ICC.ov) <- names(icc.ov)
   for (i in 1:length(icc.ov)) {
-    ICC.ov[i, 1] <- names(icc.ov)[i]
-    ICC.ov[i, 2] <- sprintf("%.4f", round(var.ov.l1[i], 4))
-    ICC.ov[i, 3] <- sprintf("%.4f", round(var.ov.l2[i], 4))
-    ICC.ov[i, 4] <- sprintf("%.4f", round(icc.ov[i], 4))
-    ICC.ov[i, 5] <- sprintf("%.4f", round(cluster.size*as.numeric(icc.ov[i]) / (1 + (cluster.size-1)*as.numeric(icc.ov[i])), 4))
+    ICC.ov[i, 1] <- names.ov[i]
+    if (ICC.ov[i, 1] %in% mL2.variables) {
+      ICC.ov[i, 2] <- paste0("gmc_", ICC.ov[i, 1])
+      ICC.ov[i, 3] <- paste0("gm_", ICC.ov[i, 1])
+      eval(parse(text = paste0("mlm_icc <- lmer(", names.ov[i], " ~ 1 + (1 | ", Cluster[1], "), data = data.source)")))
+      vc <- as.data.frame(VarCorr(mlm_icc))
+      var.l1 <- vc[vc$grp == "Residual", "vcov"]
+      var.l2 <- vc[vc$grp == Cluster[1], "vcov"]
+      icc_1 <- var.l2/(var.l1 + var.l2)
+      ICC.ov[i, 4] <- sprintf("%.4f", round(var.l1, 4))
+      ICC.ov[i, 5] <- sprintf("%.4f", round(var.l2, 4))
+      ICC.ov[i, 6] <- sprintf("%.4f", round(as.numeric(ICC.ov[i,5])/(as.numeric(ICC.ov[i,4]) + as.numeric(ICC.ov[i,5])), 4))
+      ICC.ov[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.ov[i,6]) / (1 + (cluster.size-1)*as.numeric(ICC.ov[i,6])), 4))
+    } else {
+      ICC.ov[i, 2] <- names(icc.ov)[i]
+      ICC.ov[i, 3] <- names(icc.ov)[i]
+      ICC.ov[i, 4] <- sprintf("%.4f", round(var.ov.l1[i], 4))
+      ICC.ov[i, 5] <- sprintf("%.4f", round(var.ov.l2[i], 4))
+      ICC.ov[i, 6] <- sprintf("%.4f", round(as.numeric(ICC.ov[i,5])/(as.numeric(ICC.ov[i,4]) + as.numeric(ICC.ov[i,5])), 4))
+      ICC.ov[i, 7] <- sprintf("%.4f", round(cluster.size*as.numeric(ICC.ov[i,6]) / (1 + (cluster.size-1)*as.numeric(ICC.ov[i,6])), 4))
+    } # end (if ICC.ov[i, 1])
   } # end (for i)
-  cat("\n", "## ----- ICC(1) and ICC(2) for (Partial) metric invariance model ----- ##", rep("\n",2))
+  cat("\n", "## ----- ICC(1) and ICC(2) for (Partial) Metric Invariance Model ----- ##", rep("\n",2))
   cat(" # --- Observed Variables --- #", "\n")
   print(as.data.frame(ICC.ov), row.names=F)
   cat(rep("\n",2))
@@ -5097,6 +5207,7 @@ MLCompareLoadings <- function(model, data.source, Cluster="NULL", Type1 = 0.05, 
   } # end (for i)
   cat(" # --- Latent Variables --- #", "\n")
   print(as.data.frame(ICC.lv), row.names=F)
+  cat(rep("\n",2))
 
   cat(rep("\n", 2), "## Compare fit indices across models ##", "\n")
   DMODFIT <- matrix(0, nrow = 3, ncol = 10)
@@ -10391,5 +10502,23 @@ PAIRcorrected.cfi <- function(PSI.object, data, cluster="NULL") {
 # XX <- fitmeasures[c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr_bentler", "aic", "bic")]
 
 ## ==========  Finish Function PAIRcorrect.cfi ========== ##
+
+
+
+## ----- Sub-function gmc & gm - Calculate the group-mean centered and group mean ----- ##
+gmc <- function(x) { x - mean(x, na.rm=TRUE) }
+gm  <- function(x) { mean(x, na.rm=TRUE) }
+## -------------------------------------------------------- ##
+
+
+## ----- Sub-function mL2 - Create the group-mean centered and group mean variables ----- ##
+mL2 <- function(data.source, id, mL2.variables) {
+  data_centered <- data.source %>%
+  group_by(across(all_of(id))) %>%
+  mutate(across(all_of(mL2.variables), ~gmc(.x), .names = "gmc_{.col}")) %>%
+  mutate(across(all_of(mL2.variables), ~gm(.x), .names = "gm_{.col}")) %>%
+  ungroup()
+}
+## ----- Finish Sub-Function mL2 ----- ##
 
 
